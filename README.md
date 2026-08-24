@@ -55,12 +55,12 @@ your task as a prompting task at all.
     ├── scripts/
     │   ├── lint_prompt.py              mechanical anti-pattern check
     │   └── build_system_prompt.py      flatten to one file for other platforms
+    ├── hooks/
+    │   ├── restate-brief.py            optional, see below
+    │   ├── settings-snippet.json
+    │   └── README.md
     ├── commands/prompt.md              optional slash command
     └── evals/evals.json                trigger and behaviour test cases
-
-    hooks/
-    ├── restate-brief.py                optional, see below
-    └── settings-snippet.json
 
 Reference files load only when the task needs them, so the always-on cost is the
 description alone.
@@ -160,8 +160,9 @@ and are meant to be edited to match how you actually write. It exits zero on any
 malformed input, because a hook that blocks a turn is worse than one that does
 nothing.
 
-Install by copying it to `~/.claude/hooks/` and merging `settings-snippet.json`
-into your `settings.json`. Check the payload field name against your Claude Code
+It ships inside the skill directory so one copy step installs everything, but a
+hook is not loaded from there. Copy it to `~/.claude/hooks/` and merge
+`settings-snippet.json` into your `settings.json`. Check the payload field name against your Claude Code
 version; the script tries four common variants.
 
 ## Scope and limits
