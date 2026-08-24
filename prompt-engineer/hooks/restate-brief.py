@@ -29,12 +29,15 @@ SKIP = re.compile(
     r"erklär|explain|zeig mir|show me|lies|read|find|such|grep|"
     r"fix typo|rename|kommentier)\w*\b")
 
-BRIEF = """Before starting, restate this in at most four sentences: what you
-understand the goal to be, the assumptions you are making that the request did
-not specify, and the acceptance criteria you will hold yourself to. If an
-assumption would be expensive to get wrong, ask instead of guessing. Then do the
-work. The restatement is not a plan document and not a deliverable; if your turn
-ends with it and no tool calls, nothing happened.
+BRIEF = """Before starting, restate this briefly: the goal as you understand it,
+the assumptions you are making that the request did not specify, and the
+acceptance criteria you will hold yourself to. If an assumption would be
+expensive to get wrong, ask instead of guessing. Then do the work.
+
+Keep it short and follow whatever response style is already in force; this asks
+for the content, not for a particular register or length. The restatement is not
+a plan document and not a deliverable. If your turn ends with it and no tool
+calls, nothing happened.
 
 If the task spans more than one session, this is the case where written
 artifacts earn their cost: use the prompt-engineer skill and split it into an
