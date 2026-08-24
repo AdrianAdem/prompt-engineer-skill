@@ -3,10 +3,12 @@
 An Agent Skill that turns a request into a production-ready prompt, together with
 the test cases and success criteria needed to tell whether it works.
 
-It handles three modes. **Create** writes a new prompt. **Revise** improves an
+It handles four modes. **Create** writes a new prompt. **Revise** improves an
 existing one and shows a changelog rather than silently rewriting it. **Migrate**
 moves a working prompt to a different model without conflating the model change
-with prompt changes.
+with prompt changes. **Execute** is for the agent itself: the person asked for
+the work, and the skill supplies the structure for doing it and for briefing any
+subagents, without handing back a document about it.
 
 Before writing anything it checks whether a prompt is the right artifact at all,
 because in an agent harness the same instruction can live in a prompt, a hook, a
@@ -43,6 +45,7 @@ your task as a prompting task.
     │   ├── delivery-mechanics.md       turn placement, structured output, caching
     │   ├── evaluation.md               success criteria, edge cases, grading
     │   ├── agentic-prompts.md          phased builds and multi-window work
+    │   ├── self-and-subagents.md       using it on your own work, briefing agents
     │   └── artifact-routing.md         prompt vs hook vs skill vs subagent
     ├── scripts/
     │   ├── lint_prompt.py              mechanical anti-pattern check

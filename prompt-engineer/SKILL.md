@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-description: Turns a request into a production-ready prompt, together with the test cases and success criteria needed to tell whether it works. Use this whenever the user is writing, revising, debugging, or migrating a prompt, system prompt, agent instruction, subagent definition, or skill file. Also use it when they ask why a prompt got worse after a model or version change, when they want an LLM to do some task reliably or at volume, or when they are drafting text that will be pasted into another model. Trigger even when the word "prompt" never appears.
+description: Turns a request into a production-ready prompt, together with the test cases and success criteria needed to tell whether it works. Use this whenever the user is writing, revising, debugging, or migrating a prompt, system prompt, agent instruction, subagent definition, or skill file. Also use it when they ask why a prompt got worse after a model or version change, when they want an LLM to do some task reliably or at volume, or when they are drafting text that will be pasted into another model. Use it on your own work too: when you are about to structure a multi-step build for yourself, or write a brief for a subagent you are delegating to. Trigger even when the word "prompt" never appears.
 ---
 
 # Prompt Engineer
@@ -49,8 +49,11 @@ interrogate them for values you can reasonably assume.
 - **Output language**, if the prompt's output must be in a different language
   from the prompt itself. Models default to matching the prompt, so this has to
   be stated explicitly when they differ.
-- **Mode**: `create`, `revise` (an existing prompt), or `migrate` (an existing
-  prompt moving to a different model).
+- **Mode**: `create`, `revise` (an existing prompt), `migrate` (an existing
+  prompt moving to a different model), or `execute` (the person asked for the
+  work itself, and you are using this skill to structure your own execution and
+  to brief subagents). In `execute` mode the deliverable is the work, not a
+  document about the work. See `references/self-and-subagents.md`.
 - **Deployment**: chat UI, API call, or agent harness. This changes the delivery
   advice, not the prompt body.
 
@@ -126,7 +129,9 @@ anchor.
 
 For the class-specific rules, read `references/model-classes.md`. For agentic and
 multi-context-window prompts, read `references/agentic-prompts.md`. For API and
-harness delivery, read `references/delivery-mechanics.md`.
+harness delivery, read `references/delivery-mechanics.md`. When the task is your
+own work or a subagent brief rather than a prompt for someone else, read
+`references/self-and-subagents.md`.
 
 ## Step 5: make it testable
 
@@ -191,6 +196,13 @@ result does not assert Anthropic-specific error codes to a model that does not
 have them.
 
 ## Response format
+
+In `execute` mode none of the below applies: the person asked for the work, so
+deliver the work. State the phases and their acceptance criteria in one short
+paragraph before starting, then build. A structured plan is not progress; if
+your turn ends with a plan and no tool calls, nothing happened.
+
+For the other three modes:
 
 1. **Analysis** (omit entirely for simple requests, and say nothing about having
    omitted it): prompt type, target class, effort recommendation, assumptions,

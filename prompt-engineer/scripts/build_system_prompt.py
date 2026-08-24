@@ -23,6 +23,7 @@ ORDER = [
     "model-classes.md",
     "delivery-mechanics.md",
     "agentic-prompts.md",
+    "self-and-subagents.md",
     "evaluation.md",
 ]
 # Sections tagged for one provider are dropped when building for another.
