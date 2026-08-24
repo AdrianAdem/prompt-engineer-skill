@@ -88,7 +88,14 @@ bump with a prompt edit.
 Use XML tags to delineate sections with distinct content types. Include only what
 the task needs, in whatever order serves clarity:
 
-- `<role>` specific and domain-contextualised, never generic filler
+- `<role>` specific and domain-contextualised, and only when it changes the
+  output. Test each clause: does it tell the model something it must now do
+  differently? Naming a domain does ("Next.js and PostGIS" narrows the library
+  choices). Asserting experience does not. "You have built several of these
+  from scratch to production", "senior", "with years of experience" are  <!-- lint-ignore -->
+  flattery aimed at the model, and they survive review because they sound like
+  context. Cut the clause and check whether anything about the output would
+  change; if not, it was padding.
 - `<context>` the larger goal, the audience, what the output enables
 - `<task>` a clear imperative; numbered steps only for genuinely sequential work
 - `<input>` variable data with `{{VARIABLE_NAME}}` placeholders
@@ -129,7 +136,7 @@ day needs a real eval set. See `references/evaluation.md`.
 
 ## Anti-patterns
 
-<!-- lint-disable: prefill, vague-quality, undated-model -->
+<!-- lint-disable: prefill, vague-quality, undated-model, filler-role -->
 This section names anti-patterns in order to remove them, so the linter's own
 checks would fire on the descriptions. That is what the waiver above is for; the
 same directive is available to any prompt that legitimately needs a flagged
@@ -144,13 +151,19 @@ Remove these on sight, including when revising someone else's prompt:
 - Prompt-text JSON enforcement where structured outputs or a strict tool schema
   exists; and conversely, schema constraints the API cannot express
 - Long source documents placed below the instructions
-- Generic filler roles and motivational padding
+- Roles asserting experience, seniority, or excellence rather than domain
+  ("you have built several of these", "world-class", "senior"), and any other
+  motivational padding
 - Constraints restating model defaults ("be accurate", "be helpful")
 - Verbosity control written entirely as prohibitions
 - Exhaustive rule lists where one principled instruction suffices
 - Sections included because a skeleton has them
 - Examples that anchor open-ended creative work
 - Vague quality words without measurable criteria
+- Personal details about the requester that do not change the work (age,
+  location, employer) in a prompt that will be committed or pasted repeatedly.
+  Keep what constrains the build, such as skill gaps that change what to
+  recommend, and drop the rest.
 - Model versions hardcoded into reusable templates without a date
 - An unpinned effort setting on a model that exposes one
 - Prompt edits proposed before a baseline exists, or several changes bundled into

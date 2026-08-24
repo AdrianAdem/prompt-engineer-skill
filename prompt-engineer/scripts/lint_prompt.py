@@ -52,9 +52,20 @@ CHECKS = [
      "model default. Replace with a checkable success criterion.", None),
 
     ("filler-role", "warn",
-     r"(?i)\b(world[- ]class|expert[- ]level|you are the best|renowned|"
-     r"highly skilled|master(ful)? (of|at)|10x |rockstar)\b",
-     "Motivational padding in the role. It adds no constraint the model can act on.",
+     r"(?i)("
+     r"\b(world[- ]class|expert[- ]level|you are the best|renowned|highly skilled|"
+     r"master(ful)? (of|at)|10x |rockstar|top[- ]tier|elite)\b"
+     r"|\b(weltklasse|erstklassig|herausragend)\b"
+     r"|\b(you are an? )?(senior|principal|staff|lead) (developer|engineer|"
+     r"architect|designer|writer)\b"
+     r"|\bdu bist (ein )?(senior|erfahrener|langjaehriger)\b"
+     r"|(you|du) (have|hast) (already |schon )?(built|gebaut|geschrieben|shipped)\b"
+     r"|\b(years of experience|jahrelange erfahrung|von null bis produktion)\b"
+     r"|\bmehrere \w+([- ]\w+)* (apps|projekte|anwendungen|systeme)\b"
+     r")",
+     "Padding in the role: asserts experience, seniority, or excellence rather "
+     "than domain. Cut the clause and check whether the output would change; if "
+     "not, it was flattery aimed at the model.",
      None),
 
     ("undated-model", "warn",
@@ -82,13 +93,19 @@ CODEBLOCK_RE = re.compile(r"```.*?```", re.S)
 #   <!-- lint-disable: prefill, vague-quality -->
 # and a single line can waive everything with a trailing "lint-ignore".
 DISABLE_RE = re.compile(r"lint-disable:\s*([a-z0-9,\s-]+)", re.I)
+# The capture runs up to the closing "-->" and swallows its first hyphen, so the
+# last id in a list arrives as "filler-role -". Normalise before comparing.
+CHECK_ID_RE = re.compile(r"[a-z][a-z0-9-]*[a-z0-9]", re.I)
 
 
 def lint(text, target_class=None):
     findings = []
     disabled = set()
     for m in DISABLE_RE.finditer(text):
-        disabled |= {c.strip() for c in m.group(1).split(",") if c.strip()}
+        for chunk in m.group(1).split(","):
+            found = CHECK_ID_RE.search(chunk)
+            if found:
+                disabled.add(found.group(0).lower())
     # Don't flag things inside fenced code blocks; those are usually examples.
     scannable = CODEBLOCK_RE.sub("", text)
     lines = scannable.splitlines()
@@ -116,7 +133,15 @@ def lint(text, target_class=None):
                          "match": f"{negations} prohibitions in {words} words",
                          "message": dict((c[0], c[3]) for c in CHECKS)["negation-heavy"]})
 
-    if "no-placeholders" not in disabled and not PLACEHOLDER_RE.search(text) and words > 80:
+    # An agentic build prompt is parameterless by design; its variable part lives
+    # in the repo it operates on. Flagging it teaches the reader to invent
+    # placeholders with nothing to fill them.
+    agentic = bool(re.search(
+        r"(?i)(<phases>|acceptance.criteri|akzeptanzkriterien|checkpoint.polic|"
+        r"end your turn|beende den zug|one feature per session|"
+        r"ein feature pro session)", text))
+    if ("no-placeholders" not in disabled and not agentic
+            and not PLACEHOLDER_RE.search(text) and words > 80):
         findings.append({"check": "no-placeholders", "severity": "warn", "line": 0,
                          "match": "none found",
                          "message": dict((c[0], c[3]) for c in CHECKS)["no-placeholders"]})

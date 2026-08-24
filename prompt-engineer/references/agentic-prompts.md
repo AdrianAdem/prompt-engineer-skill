@@ -95,19 +95,38 @@ the environment every later session relies on, not to build the product:
 - a structured feature list, one entry per end-to-end user-visible behaviour,
   each marked as failing at the start. Use JSON rather than Markdown, because
   models are markedly less willing to quietly rewrite a JSON file.
+- **Dependencies filled in, not just declared.** If the schema has a
+  `depends_on` field, the initializer prompt must instruct that it be populated
+  for every entry, and the acceptance check must verify that entries which
+  obviously build on others are not left with an empty list. This is the
+  failure that looks like nothing: a schema showing `depends_on: []` in its
+  example produces a file where every entry has an empty list, the worker's
+  selection rule silently never applies, and the work gets built in list order.
+  Marking a country on a globe gets attempted before the globe renders.
 - a startup script, so no later session has to rediscover how to run the thing
 - a progress file and an initial commit
 
 **Worker prompt**, for every subsequent window:
 
 - start by reading the progress file, the commit log, and the startup script,
-  then smoke-test the current state to catch undocumented breakage
+  then smoke-test the current state to catch undocumented breakage. **Bound the
+  smoke test explicitly**, to a named critical path plus the most recently
+  completed item. An unbounded "check everything that passes" is cheap at three
+  features and eats an entire session at twenty, which is precisely when the
+  agent starts skipping it without saying so.
 - pick exactly one feature from the list and do only that
 - edit the feature list only by flipping a status field. Say plainly that
   removing or rewriting entries is unacceptable, because it silently shrinks the
   definition of done.
 - flip a status to passing only after verifying end to end the way a user would
 - end by committing with a descriptive message and writing a progress update
+- **Give partial progress somewhere to go.** Some items are too large for one
+  window however carefully the list was cut, and a rule of one item per session
+  with no escape hatch turns that into a session with no recorded outcome. State
+  what to do instead: commit the partial work on its branch, leave the status
+  failing, and write down in the progress file what is done, what remains, and
+  what the next session should pick up. An item that resists two sessions in a
+  row is a sign it should be split, and the prompt should say so.
 
 The pair costs more to write than one prompt and is the difference between an
 agent that finishes and one that plateaus. Raise it whenever the user describes
