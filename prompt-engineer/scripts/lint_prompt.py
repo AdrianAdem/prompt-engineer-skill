@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+"""Check a prompt against the mechanically detectable anti-patterns.
+
+This covers only what a regex can see. Altitude, whether a constraint carries its
+reason, whether examples anchor creative work: those need judgment and stay with
+the model. Run this first anyway, because the grading ladder says code before
+LLM, and every finding here is one the model no longer has to spend attention on.
+
+Usage:
+    python scripts/lint_prompt.py myprompt.md
+    python scripts/lint_prompt.py myprompt.md --class 1
+    cat myprompt.md | python scripts/lint_prompt.py -
+    python scripts/lint_prompt.py myprompt.md --json
+"""
+import argparse
+import json
+import re
+import sys
+
+# (id, severity, regex, message, applies_to_classes)
+CHECKS = [
+    ("reasoning-reproduction", "error",
+     r"(?i)\b(think step by step|show your (reasoning|thinking|work)|explain your reasoning|"
+     r"<thinking>|in thinking tags|walk me through your thought)",
+     "Instructs the model to reproduce its reasoning. On internal-reasoning models "
+     "this adds nothing and can trigger refusals. If the OUTPUT needs a reasoning "
+     "artifact, frame it as an output artifact instead.", {"1"}),
+
+    ("missing-cot", "warn",
+     None,  # handled separately
+     "No chain-of-thought guidance found. Class 2 and 3 models need it explicitly "
+     "for multi-step work.", {"2", "3"}),
+
+    ("prefill", "error",
+     r"(?i)(prefill|pre-fill|assistant.{0,20}turn.{0,20}(start|begin)s? with|"
+     r"begin your response with the following text)",
+     "Looks like a prefill technique. Unsupported on Claude 4.6 and later, returns "
+     "400. Use structured outputs, a strict tool schema, or instruct the format.",
+     None),
+
+    ("prompt-text-json", "warn",
+     r"(?i)(respond only (in|with) (valid )?json|output only json|"
+     r"return (a |valid )?json (object|array)|no (other )?text.{0,15}json)",
+     "Enforces JSON through prompt text. If the API offers structured outputs or a "
+     "strict tool schema, use that instead; it is a grammar constraint, not a "
+     "request.", None),
+
+    ("vague-quality", "warn",
+     r"(?i)\b(be (accurate|helpful|professional|engaging|thorough|concise)|"
+     r"high[- ]quality|make it good|do your best|as best you can)\b",
+     "Vague quality word with no measurable criterion, or a constraint restating a "
+     "model default. Replace with a checkable success criterion.", None),
+
+    ("filler-role", "warn",
+     r"(?i)\b(world[- ]class|expert[- ]level|you are the best|renowned|"
+     r"highly skilled|master(ful)? (of|at)|10x |rockstar)\b",
+     "Motivational padding in the role. It adds no constraint the model can act on.",
+     None),
+
+    ("undated-model", "warn",
+     r"(?i)\b(gpt-[45][\w.-]*|claude[- ](opus|sonnet|haiku|fable|mythos)[- ]?[\d.]+|"
+     r"gemini[- ][\d.]+|o[1-9]\b|llama[- ]?[\d.]+|qwen[\d.-]*)",
+     "Hardcoded model name. In a reusable template, add a date or describe the "
+     "capability instead, or the prompt silently rots.", None),
+
+    ("negation-heavy", "warn",
+     None,  # handled separately
+     "Heavy use of prohibitions. Negations are unreliable on smaller models; show "
+     "the target instead of forbidding the miss.", None),
+
+    ("no-placeholders", "warn",
+     None,  # handled separately
+     "No {{VARIABLE}} placeholders found. If this template takes variable input, "
+     "the input needs to be marked as such.", None),
+]
+
+NEGATION_RE = re.compile(r"(?i)\b(don't|do not|never|avoid|no |must not|should not|refrain)\b")
+COT_RE = re.compile(r"(?i)(step by step|first.{0,40}then|work through|before (you )?answer)")
+PLACEHOLDER_RE = re.compile(r"\{\{[A-Za-z0-9_]+\}\}")
+CODEBLOCK_RE = re.compile(r"```.*?```", re.S)
+# A file can waive checks it discusses rather than commits:
+#   <!-- lint-disable: prefill, vague-quality -->
+# and a single line can waive everything with a trailing "lint-ignore".
+DISABLE_RE = re.compile(r"lint-disable:\s*([a-z0-9,\s-]+)", re.I)
+
+
+def lint(text, target_class=None):
+    findings = []
+    disabled = set()
+    for m in DISABLE_RE.finditer(text):
+        disabled |= {c.strip() for c in m.group(1).split(",") if c.strip()}
+    # Don't flag things inside fenced code blocks; those are usually examples.
+    scannable = CODEBLOCK_RE.sub("", text)
+    lines = scannable.splitlines()
+
+    for cid, sev, pattern, msg, classes in CHECKS:
+        if cid in disabled:
+            continue
+        if classes and target_class and target_class not in classes:
+            continue
+        if pattern is None:
+            continue
+        rx = re.compile(pattern)
+        for i, line in enumerate(lines, 1):
+            if "lint-ignore" in line:
+                continue
+            m = rx.search(line)
+            if m:
+                findings.append({"check": cid, "severity": sev, "line": i,
+                                 "match": m.group(0)[:60], "message": msg})
+
+    words = max(len(scannable.split()), 1)
+    negations = len(NEGATION_RE.findall(scannable))
+    if "negation-heavy" not in disabled and negations / words > 0.02 and negations >= 5:
+        findings.append({"check": "negation-heavy", "severity": "warn", "line": 0,
+                         "match": f"{negations} prohibitions in {words} words",
+                         "message": dict((c[0], c[3]) for c in CHECKS)["negation-heavy"]})
+
+    if "no-placeholders" not in disabled and not PLACEHOLDER_RE.search(text) and words > 80:
+        findings.append({"check": "no-placeholders", "severity": "warn", "line": 0,
+                         "match": "none found",
+                         "message": dict((c[0], c[3]) for c in CHECKS)["no-placeholders"]})
+
+    if ("missing-cot" not in disabled and target_class in {"2", "3"}
+            and not COT_RE.search(scannable)):
+        findings.append({"check": "missing-cot", "severity": "warn", "line": 0,
+                         "match": "none found",
+                         "message": dict((c[0], c[3]) for c in CHECKS)["missing-cot"]})
+
+    return findings
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("path", help="prompt file, or - for stdin")
+    ap.add_argument("--class", dest="cls", choices=["1", "2", "3"],
+                    help="target model class; enables class-specific checks")
+    ap.add_argument("--json", action="store_true", help="machine-readable output")
+    args = ap.parse_args()
+
+    text = sys.stdin.read() if args.path == "-" else open(args.path).read()
+    findings = lint(text, args.cls)
+
+    if args.json:
+        print(json.dumps(findings, indent=2))
+    elif not findings:
+        print("clean: no mechanical anti-patterns found")
+        print("Altitude, reasons behind constraints, and example choice still need review.")
+    else:
+        errors = sum(1 for f in findings if f["severity"] == "error")
+        for f in findings:
+            loc = f"line {f['line']}" if f["line"] else "whole file"
+            print(f"[{f['severity']}] {f['check']} ({loc}): {f['match']}")
+            print(f"    {f['message']}\n")
+        print(f"{len(findings)} finding(s), {errors} error(s)")
+
+    return 1 if any(f["severity"] == "error" for f in findings) else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

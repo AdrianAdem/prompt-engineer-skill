@@ -1,0 +1,29 @@
+{
+  "skill_name": "prompt-engineer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need something that reads support tickets and pulls out the product name, the severity, and whether the customer is asking for a refund. It has to run on every ticket we get, a few thousand a day.",
+      "expected_output": "A template prompt with {{VARIABLE}} placeholders, structured-output guidance rather than prompt-text JSON enforcement, and test cases including an irrelevant-input case. Should recommend an effort setting.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Our summarisation prompt got noticeably worse after we upgraded the model last week. Can you fix it?",
+      "expected_output": "Recognises migrate mode. Does not rewrite the prompt first. Gives the ordered protocol: pin effort, baseline against evals, only then tune, one change per measurement.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Write me a prompt I can paste in every time I want the model to check my code against our style guide.",
+      "expected_output": "Routes to a skill rather than a prompt, and says why in one line: a thing pasted repeatedly drifts across copies. Then produces the skill.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "I want an agent to rebuild our internal dashboard. Realistically it's a week of work.",
+      "expected_output": "Recognises multi-context-window work and produces two prompts, initializer and worker, with a JSON feature list and end-to-end verification.",
+      "files": []
+    }
+  ]
+}
