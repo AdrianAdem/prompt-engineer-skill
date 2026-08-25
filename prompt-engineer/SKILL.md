@@ -138,9 +138,17 @@ own work or a subagent brief rather than a prompt for someone else, read
 
 ## Step 5: make it testable
 
-Every deliverable ships with a way to check it. Scale the apparatus to the stakes:
-a chat one-off needs three test inputs, a template running thousands of times a
-day needs a real eval set. See `references/evaluation.md`.
+Every deliverable ships with a way to check it, sized to the stakes. A chat
+one-off needs three inputs; a template running thousands of times a day needs a
+seed set, a stated set size, and a grading method. Anything that enforces a rule
+needs a case that attempts to bypass the rule and is expected to fail, because a
+rule tested only with compliant input is untested.
+
+`references/evaluation.md` has the sizing table, the method for growing a large
+set from a hand-written seed, the classification rules, and a worked seed-set
+example. Read it before writing test cases; the counts there are prescribed
+rather than left to judgment, because "write some test cases" reliably produces
+three that all pass.
 
 ## Anti-patterns
 
@@ -228,11 +236,14 @@ For the other three modes:
    not a reasoning trace.
 2. **Changelog**: revise and migrate modes only.
 3. **The prompt**: the deliverable.
-4. **Test cases**: one typical, one drawn from the canonical edge cases in
-   `references/evaluation.md`, one stressing the prompt's main constraint. Then a
-   one-line **failure signature** naming what a bad output looks like, so the user
-   can recognise it without rereading the prompt. If it runs at volume, add one
-   line on grading it at scale.
+4. **Test cases**, sized to how the prompt will run, per the table in
+   `references/evaluation.md`. Three cases is the chat-one-off floor: one
+   typical, one canonical edge case, one stressing the main constraint. A prompt
+   that runs at volume needs a seed set and a stated set size instead, and a
+   classifier needs per-class coverage with borderline items and a confusion
+   matrix. Say plainly which of the two you are delivering; three cases is a
+   smoke test, not a measurement. Then a one-line **failure signature** naming
+   what a bad output looks like.
 5. **Usage notes**: variables to fill, effort setting, delivery mechanics if
    relevant, and what to adjust first if results miss.
 
