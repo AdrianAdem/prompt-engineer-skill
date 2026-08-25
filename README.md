@@ -50,6 +50,7 @@ your task as a prompting task at all.
     │   ├── model-classes.md            capability signatures and effort settings
     │   ├── delivery-mechanics.md       turn placement, structured output, caching
     │   ├── agentic-prompts.md          phased builds and multi-window work
+    │   ├── examples.md                 coverage, ordering, when examples hurt
     │   ├── self-and-subagents.md       using it on your own work, briefing agents
     │   └── evaluation.md               success criteria, edge cases, grading
     ├── scripts/
@@ -60,7 +61,9 @@ your task as a prompting task at all.
     │   ├── settings-snippet.json
     │   └── README.md
     ├── commands/prompt.md              optional slash command
-    └── evals/evals.json                trigger and behaviour test cases
+    └── evals/
+        ├── evals.json                  behaviour and triggering cases
+        └── run_evals.py                runner with assertions
 
 Reference files load only when the task needs them, so the always-on cost is the
 description alone.
@@ -113,12 +116,42 @@ A file can waive checks it discusses rather than commits:
 
     <!-- lint-disable: prefill, vague-quality -->
 
-and a single line can waive everything with a trailing `lint-ignore`.
+and a single line can waive everything with a trailing `lint-ignore`. For whole
+files that are documentation about prompting rather than prompts, use `--docs`,
+which disables the six checks that fire on merely naming a pattern. The skill's
+own reference files are linted that way; `SKILL.md` and the slash command are
+linted normally, because they are instructions.
+
+The model-name check is deliberately not part of `--docs`: reference
+documentation is the first thing to go stale, so it stays live everywhere and is
+satisfied by recording a date, not by an exemption.
+
+    ./scripts/lint_all.sh
+
+runs every prose file the skill ships in the mode that fits it, and validates
+the two JSON files structurally. Exit 0 means the whole package is clean, not
+just one file.
 
 It deliberately does not judge altitude, whether constraints carry their reasons,
 or whether examples are anchoring creative work. Those need a model. Agentic
 build prompts are exempt from the placeholder check, since they are parameterless
 by design.
+
+## Running the evals
+
+    export ANTHROPIC_API_KEY=...
+    python evals/run_evals.py                  # the automatable cases
+    python evals/run_evals.py --manual         # the triggering checklist
+    python evals/run_evals.py --dry-run        # print prompts, call nothing
+
+Each case carries machine-checkable assertions rather than a prose expectation,
+so a run gives a pass count instead of something to read and judge. Failures
+write the full output to `evals/out_<id>.txt`.
+
+Two cases test whether the skill *triggers*, and those are printed as a manual
+checklist instead of being run. Triggering is a property of the harness that
+loads the skill; no API call reproduces it. Pretending otherwise would be the
+exact failure this skill warns about, a green result that proves nothing.
 
 ## Using it outside Claude
 

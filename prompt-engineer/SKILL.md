@@ -104,7 +104,9 @@ the task needs, in whatever order serves clarity:
 - `<input>` variable data with `{{VARIABLE_NAME}}` placeholders
 - `<success_criteria>` what a correct output looks like, in checkable terms
 - `<constraints>` only those overriding default behaviour, each with its reason
-- `<examples>` 2 to 5 diverse examples, only when consistency demands them
+- `<examples>` only when consistency demands them; 2 to 5 on a Class 1 target,
+  more on weaker classes, see `references/examples.md` for the gradient and for
+  what the set must cover
 - `<output_format>` length, structure, required sections, output language
 
 Four principles govern the wording.
@@ -125,7 +127,8 @@ set" is.
 behaviour beat descriptions of what to avoid, and negations are unreliable on
 smaller models. Use examples when format, tone, or style consistency across many
 runs matters; skip them on open-ended creative or analytical work, where they
-anchor.
+anchor. Once you have decided to use them, `references/examples.md` covers
+coverage, ordering, and the rules that decide whether a set works.
 
 For the class-specific rules, read `references/model-classes.md`. For agentic and
 multi-context-window prompts, read `references/agentic-prompts.md`. For API and
@@ -180,13 +183,28 @@ Two optional scripts, both plain Python with no dependencies.
 
 `scripts/lint_prompt.py <file>` checks a prompt against the mechanically
 detectable anti-patterns above: reasoning-reproduction instructions, prefill
-patterns, prompt-text JSON enforcement, filler roles, vague quality words,
-undated model names, and prohibition-heavy phrasing. Run it before reviewing a
-prompt by hand, because the grading ladder puts code before judgment and every
-finding it catches is one you no longer have to spend attention on. It sees only
-what a regex can see; altitude, whether constraints carry their reasons, and
-whether examples anchor creative work stay with you. Pass `--class 2` or
-`--class 3` to enable the class-specific checks.
+patterns, prompt-text JSON enforcement, roles asserting seniority or experience,
+vague quality words, undated model names, and prohibition-heavy phrasing. Run it
+before reviewing a prompt by hand, because the grading ladder puts code before
+judgment and every finding it catches is one you no longer have to spend
+attention on. It sees only what a regex can see; altitude, whether constraints
+carry their reasons, and whether examples anchor creative work stay with you.
+Pass `--class 2` or `--class 3` to enable the class-specific checks.
+
+Pass `--docs` when the file is documentation *about* prompting rather than a
+prompt: six of the checks fire on merely naming a pattern, and linting prose
+about an anti-pattern as if it were one is a category error. Do not reach for it
+to quiet a real finding; it disables those checks wholesale. The model-name
+check stays live in both modes, because documentation is the first thing to go
+stale, and it is satisfied by recording a date rather than by an exemption.
+
+`scripts/lint_all.sh` runs every prose file the skill ships in the mode that
+fits it, and validates the two JSON files structurally.
+
+`evals/run_evals.py` runs the cases in `evals/evals.json` against the API and
+checks each output against machine-checkable assertions. Two of the cases test
+triggering, which no API call can reproduce, so it prints those as a manual
+checklist instead of pretending to run them.
 
 `scripts/build_system_prompt.py` flattens this skill into a single system prompt
 for platforms that have no skill mechanism. Use it when the user wants this

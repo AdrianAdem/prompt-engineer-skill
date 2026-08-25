@@ -23,6 +23,7 @@ ORDER = [
     "model-classes.md",
     "delivery-mechanics.md",
     "agentic-prompts.md",
+    "examples.md",
     "self-and-subagents.md",
     "evaluation.md",
 ]

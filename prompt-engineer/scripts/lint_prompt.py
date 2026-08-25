@@ -69,8 +69,18 @@ CHECKS = [
      None),
 
     ("undated-model", "warn",
-     r"(?i)\b(gpt-[45][\w.-]*|claude[- ](opus|sonnet|haiku|fable|mythos)[- ]?[\d.]+|"
-     r"gemini[- ][\d.]+|o[1-9]\b|llama[- ]?[\d.]+|qwen[\d.-]*)",
+     r"(?i)("
+     # current Claude naming: tier before number
+     r"\bclaude[- ](opus|sonnet|haiku|fable|mythos)[- ]?[\d.]+"
+     # legacy Claude naming: number before tier, e.g. claude-3-5-sonnet,
+     # claude-3-opus. These are exactly what turns up in revise mode, where an
+     # old prompt arrives carrying an old model id.
+     r"|\bclaude[- ]\d(?:[-.]\d)*[- ](opus|sonnet|haiku|instant)"
+     # oldest Claude ids carry no tier at all: claude-2.1, claude-instant-1.2
+     r"|\bclaude-(instant-)?\d+(\.\d+)*\b"
+     r"|\bgpt-[45][\w.-]*|\bgpt-4o\b"
+     r"|\bgemini[- ][\d.]+|\bo[1-9]\b|\bllama[- ]?[\d.]+|\bqwen[\d.-]*"
+     r")",
      "Hardcoded model name. In a reusable template, add a date or describe the "
      "capability instead, or the prompt silently rots.", None),
 
@@ -98,9 +108,29 @@ DISABLE_RE = re.compile(r"lint-disable:\s*([a-z0-9,\s-]+)", re.I)
 CHECK_ID_RE = re.compile(r"[a-z][a-z0-9-]*[a-z0-9]", re.I)
 
 
-def lint(text, target_class=None):
+# Checks that fire on a *mention* of a pattern, not on its use. Reference
+# documentation about prompting necessarily names prefill, thinking-tag
+# instructions and model versions; linting prose about an anti-pattern as if it
+# were the anti-pattern is a category error.
+DOC_EXEMPT = {"prefill", "reasoning-reproduction",
+              "no-placeholders", "prompt-text-json", "filler-role"}
+
+# "undated-model" stays live even in docs mode: its whole point is the staleness
+# reminder, and reference documentation is the first thing to go stale. Instead
+# of exempting the file, honour what the message actually asks for. A file that
+# records when its model names were current has complied.
+DATED_RE = re.compile(
+    r"(?i)(as of|stand:|current as of|dated)\s+\w*\s*20\d\d"
+    r"|\b20\d\d-\d\d-\d\d\b"
+    r"|\b(january|february|march|april|may|june|july|august|september|october|"
+    r"november|december|januar|februar|maerz|mai|juni|juli|oktober|dezember)\s+20\d\d\b")
+
+
+def lint(text, target_class=None, docs=False):
     findings = []
-    disabled = set()
+    disabled = set(DOC_EXEMPT) if docs else set()
+    if DATED_RE.search(text):
+        disabled.add("undated-model")
     for m in DISABLE_RE.finditer(text):
         for chunk in m.group(1).split(","):
             found = CHECK_ID_RE.search(chunk)
@@ -161,10 +191,13 @@ def main():
     ap.add_argument("--class", dest="cls", choices=["1", "2", "3"],
                     help="target model class; enables class-specific checks")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
+    ap.add_argument("--docs", action="store_true",
+                    help="the file is documentation about prompting, not a prompt; "
+                         "skips the checks that fire on merely naming a pattern")
     args = ap.parse_args()
 
     text = sys.stdin.read() if args.path == "-" else open(args.path).read()
-    findings = lint(text, args.cls)
+    findings = lint(text, args.cls, docs=args.docs)
 
     if args.json:
         print(json.dumps(findings, indent=2))

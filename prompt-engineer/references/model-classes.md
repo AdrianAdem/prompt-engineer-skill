@@ -55,8 +55,9 @@ Benefits from being told how, not just what.
   by step, then give the final answer after a clear separator, with the answer
   after the reasoning and extractable from it. A brief summary of the approach at
   the start of the final answer also helps on harder tasks.
-- 3 to 6 diverse few-shot examples, covering the normal case, an edge case, and a
-  failure case.
+- 3 to 6 diverse few-shot examples, covering the normal case, an edge case, and
+  a failure case. The counts across classes are one gradient; `examples.md` has
+  the table and the rules for what the set must cover.
 - Every prohibition needs a positive counterpart: instead of X, do Y.
 - Tighter output format specs, less reliance on judgment.
 
