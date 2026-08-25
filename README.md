@@ -108,8 +108,9 @@ it is" gets you agreement, which destroys the independence you delegated for.
 
 Catches the anti-patterns a regex can see: reasoning-reproduction instructions,
 prefill patterns, prompt-text JSON enforcement, roles asserting seniority or
-experience instead of domain, vague quality words, undated model names, and
-prohibition-heavy phrasing. It exits non-zero on errors, so it drops into a
+experience instead of domain, vague quality words, undated model names,
+prohibition-heavy phrasing, and sentinel conflicts, where one line permits
+`null` for a missing field and another says a null breaks the consumer. It exits non-zero on errors, so it drops into a
 pre-commit hook or CI.
 
 A file can waive checks it discusses rather than commits:

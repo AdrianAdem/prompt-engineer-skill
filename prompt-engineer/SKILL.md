@@ -136,6 +136,24 @@ harness delivery, read `references/delivery-mechanics.md`. When the task is your
 own work or a subagent brief rather than a prompt for someone else, read
 `references/self-and-subagents.md`.
 
+## Unattended output needs an uncertainty signal
+
+When a prompt's output is consumed by a system rather than read by a person,
+extraction into a database, classification into a queue, routing, scoring, the
+schema needs a field that says the model was unsure: `confidence`, or a boolean
+`needs_review`, plus the rule for when to set it.
+
+Without one, a wrong value is indistinguishable from a right one. At three
+thousand items a day nobody re-reads the output, so an unflagged error is acted
+on silently. This is the same rule as "no silent fallbacks" in
+`references/agentic-prompts.md`, one layer down: a confidently wrong field is a
+silent fallback wearing a schema.
+
+State the threshold behaviour too, since the field is useless without it: what
+happens to a flagged item, which queue it lands in, and who looks at it. If
+nobody will look at it, say so and drop the field rather than shipping a
+decoration.
+
 ## Step 5: make it testable
 
 Every deliverable ships with a way to check it, sized to the stakes. A chat
@@ -192,7 +210,8 @@ Two optional scripts, both plain Python with no dependencies.
 `scripts/lint_prompt.py <file>` checks a prompt against the mechanically
 detectable anti-patterns above: reasoning-reproduction instructions, prefill
 patterns, prompt-text JSON enforcement, roles asserting seniority or experience,
-vague quality words, undated model names, and prohibition-heavy phrasing. Run it
+vague quality words, undated model names, prohibition-heavy phrasing, and a
+sentinel value that is permitted in one line and called an error in another. Run it
 before reviewing a prompt by hand, because the grading ladder puts code before
 judgment and every finding it catches is one you no longer have to spend
 attention on. It sees only what a regex can see; altitude, whether constraints
@@ -252,8 +271,10 @@ Keep analysis and usage notes short. The prompt is the product.
 ## Before finalising
 
 Check that the result is the right artifact and not a prompt standing in for a
-hook or a skill; that it matches its type in structure; that it states measurable
-success criteria; that it matches the target class and effort setting; that every
+hook or a skill; that it matches its type in structure; that no two constraints
+contradict each other, in particular over sentinel values such as `null`; that
+machine-consumed output carries an uncertainty signal with a stated threshold
+behaviour; that it states measurable success criteria; that it matches the target class and effort setting; that every
 placeholder is a `{{VARIABLE}}`; that constraints carry their reasons; that it
 ships with test cases; and that it would work for a capable new colleague with no
 prior context.

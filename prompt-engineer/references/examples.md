@@ -81,6 +81,16 @@ example usually wins, and the rule becomes dead text that nobody notices is
 dead. On revision, read the examples against the constraints line by line: this
 is a common source of behaviour nobody can explain.
 
+The same check applies between constraints, and that pair is easier to miss
+because both halves read as authoritative. Before finalising, list every value
+each field may take and every value the prompt calls an error, and look for a
+value in both lists. A prompt that says "return `null` for a field you cannot
+determine" two lines above "never leave a field unset, a null breaks the
+downstream insert" has told the model to do the thing it forbids, and the model
+will pick one of the two at random per run. Where a sentinel value is genuinely
+needed, name a distinct one, such as an empty string or `"unknown"`, and say
+which downstream consumer expects it.
+
 ## Placement
 
 Wrap them in `<examples>` with each in `<example>`. Put them after the task and

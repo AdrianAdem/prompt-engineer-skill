@@ -95,6 +95,17 @@ CHECKS = [
      "the input needs to be marked as such.", None),
 ]
 
+# The permitted value rarely sits directly after the verb; a field name or two
+# usually stands between them ("return product null, severity low").
+SENTINEL_ALLOW_RE = re.compile(
+    r"(?i)\b(return|use|set|output|leave|emit|default to)\b"
+    r"(?:\s+[\w,`\"'/]+){0,4}?\s+[`\"']?(null|none|nil|n/a)\b")
+SENTINEL_FORBID_RE = re.compile(
+    r"(?i)(never|do not|don't|must not)\s+(?:\w+\s+){0,4}"
+    r"(null|none|nil|empty|unset|blank)"
+    r"|(?:a\s+)?(null|empty|unset|blank)\s+(?:\w+\s+){0,3}"
+    r"(breaks|fails|is invalid|is rejected|crashes)")
+
 NEGATION_RE = re.compile(r"(?i)\b(don't|do not|never|avoid|no |must not|should not|refrain)\b")
 COT_RE = re.compile(r"(?i)(step by step|first.{0,40}then|work through|before (you )?answer)")
 PLACEHOLDER_RE = re.compile(r"\{\{[A-Za-z0-9_]+\}\}")
@@ -112,7 +123,7 @@ CHECK_ID_RE = re.compile(r"[a-z][a-z0-9-]*[a-z0-9]", re.I)
 # documentation about prompting necessarily names prefill, thinking-tag
 # instructions and model versions; linting prose about an anti-pattern as if it
 # were the anti-pattern is a category error.
-DOC_EXEMPT = {"prefill", "reasoning-reproduction",
+DOC_EXEMPT = {"prefill", "reasoning-reproduction", "sentinel-conflict",
               "no-placeholders", "prompt-text-json", "filler-role"}
 
 # "undated-model" stays live even in docs mode: its whole point is the staleness
@@ -170,6 +181,18 @@ def lint(text, target_class=None, docs=False):
         r"(?i)(<phases>|acceptance.criteri|akzeptanzkriterien|checkpoint.polic|"
         r"end your turn|beende den zug|one feature per session|"
         r"ein feature pro session)", text))
+    if "sentinel-conflict" not in disabled:
+        allow = SENTINEL_ALLOW_RE.search(scannable)
+        forbid = SENTINEL_FORBID_RE.search(scannable)
+        if allow and forbid:
+            findings.append({
+                "check": "sentinel-conflict", "severity": "error", "line": 0,
+                "match": f"{allow.group(0)[:40]} / {forbid.group(0)[:40]}",
+                "message": "The prompt both permits a sentinel value and calls it "
+                           "an error. The model will pick one of the two per run. "
+                           "Name a distinct sentinel and say which consumer "
+                           "expects it."})
+
     if ("no-placeholders" not in disabled and not agentic
             and not PLACEHOLDER_RE.search(text) and words > 80):
         findings.append({"check": "no-placeholders", "severity": "warn", "line": 0,
