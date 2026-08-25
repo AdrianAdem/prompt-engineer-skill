@@ -133,6 +133,12 @@ runs every prose file the skill ships in the mode that fits it, and validates
 the two JSON files structurally. Exit 0 means the whole package is clean, not
 just one file.
 
+Fenced code blocks are scanned in normal mode and stripped in `--docs` mode.
+The reason is which text is the object under test: a prompt sent for review sits
+inside a fence, while a fence inside documentation holds a quoted example of the
+anti-pattern being explained. `--scan-code` and `--skip-code` override the
+default either way.
+
 It deliberately does not judge altitude, whether constraints carry their reasons,
 or whether examples are anchoring creative work. Those need a model. Agentic
 build prompts are exempt from the placeholder check, since they are parameterless

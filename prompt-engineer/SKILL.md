@@ -218,6 +218,12 @@ attention on. It sees only what a regex can see; altitude, whether constraints
 carry their reasons, and whether examples anchor creative work stay with you.
 Pass `--class 2` or `--class 3` to enable the class-specific checks.
 
+Fenced code blocks are scanned by default, because a prompt handed over for
+review is nearly always pasted inside one; stripping them lints the prose
+around the prompt instead of the prompt. `--docs` inverts that, since fenced
+blocks in documentation are quoted examples of the patterns being explained.
+`--scan-code` and `--skip-code` override either default.
+
 Pass `--docs` when the file is documentation *about* prompting rather than a
 prompt: six of the checks fire on merely naming a pattern, and linting prose
 about an anti-pattern as if it were one is a category error. Do not reach for it

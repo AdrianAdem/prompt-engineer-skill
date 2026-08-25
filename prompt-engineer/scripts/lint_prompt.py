@@ -137,7 +137,17 @@ DATED_RE = re.compile(
     r"november|december|januar|februar|maerz|mai|juni|juli|oktober|dezember)\s+20\d\d\b")
 
 
-def lint(text, target_class=None, docs=False):
+def lint(text, target_class=None, docs=False, scan_code=None):
+    """scan_code: True scans fenced blocks, False strips them.
+
+    Default follows the mode. A prompt handed over for review is nearly always
+    pasted inside a fence, so in normal mode the fenced block IS the object
+    under test and stripping it lints the prose around the prompt instead of the
+    prompt. In docs mode the opposite holds: fenced blocks there are quoted
+    examples of the very patterns being explained.
+    """
+    if scan_code is None:
+        scan_code = not docs
     findings = []
     disabled = set(DOC_EXEMPT) if docs else set()
     if DATED_RE.search(text):
@@ -147,8 +157,7 @@ def lint(text, target_class=None, docs=False):
             found = CHECK_ID_RE.search(chunk)
             if found:
                 disabled.add(found.group(0).lower())
-    # Don't flag things inside fenced code blocks; those are usually examples.
-    scannable = CODEBLOCK_RE.sub("", text)
+    scannable = text if scan_code else CODEBLOCK_RE.sub("", text)
     lines = scannable.splitlines()
 
     for cid, sev, pattern, msg, classes in CHECKS:
@@ -214,13 +223,23 @@ def main():
     ap.add_argument("--class", dest="cls", choices=["1", "2", "3"],
                     help="target model class; enables class-specific checks")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
+    ap.add_argument("--skip-code", action="store_true",
+                    help="strip fenced blocks before scanning; the default in "
+                         "--docs mode and rarely right otherwise")
+    ap.add_argument("--scan-code", action="store_true",
+                    help="scan fenced blocks even in --docs mode")
     ap.add_argument("--docs", action="store_true",
                     help="the file is documentation about prompting, not a prompt; "
                          "skips the checks that fire on merely naming a pattern")
     args = ap.parse_args()
 
     text = sys.stdin.read() if args.path == "-" else open(args.path).read()
-    findings = lint(text, args.cls, docs=args.docs)
+    scan_code = None
+    if args.scan_code:
+        scan_code = True
+    elif args.skip_code:
+        scan_code = False
+    findings = lint(text, args.cls, docs=args.docs, scan_code=scan_code)
 
     if args.json:
         print(json.dumps(findings, indent=2))
