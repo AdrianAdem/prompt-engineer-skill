@@ -174,8 +174,12 @@ For a platform with no skill mechanism, flatten it into one system prompt:
     python scripts/build_system_prompt.py --core -o system-prompt.md
 
 The full build is roughly 8,900 tokens, the core alone roughly 2,000. The
-`--provider` flag drops sections tagged for a different vendor, so a prompt built
-for OpenAI does not assert Claude-specific error codes and schema limits. Every
+`--provider` flag drops reference *sections* tagged for a different vendor. It
+does not rewrite `SKILL.md`, which carries no section tags, so a few
+provider-scoped statements survive it, notably the prefill entry in the
+anti-pattern list. Those name their scope inline rather than asserting it
+generally, but a section-level filter is what this is, and that is its limit.
+Every
 section in `delivery-mechanics.md` carries a `[universal]`, `[anthropic]`, or
 `[varies]` tag for exactly this reason; that file moves fastest and is the one to
 distrust first when something reads as out of date.

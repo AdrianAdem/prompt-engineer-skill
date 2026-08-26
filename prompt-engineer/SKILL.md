@@ -181,7 +181,8 @@ Remove these on sight, including when revising someone else's prompt:
 - Instructions telling a reasoning model to reproduce its reasoning in the
   response; and conversely, missing chain-of-thought guidance on non-reasoning
   models for complex tasks
-- Prefill-based tricks (unsupported on current Claude models, returns 400)
+- Prefill-based tricks. On Claude these are unsupported from 4.6 onward and
+  return a 400; other providers differ, so check before ruling it out elsewhere
 - Prompt-text JSON enforcement where structured outputs or a strict tool schema
   exists; and conversely, schema constraints the API cannot express
 - Long source documents placed below the instructions

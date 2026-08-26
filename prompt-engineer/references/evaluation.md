@@ -1,11 +1,7 @@
 # Evaluation
 
-Every deliverable ships with a way to check it. Scale the apparatus to the
-stakes: a chat one-off needs three test inputs, a template running thousands of
-times a day needs a real eval set with a number attached.
-
 This file is the one place in this skill where a count is prescribed. That is
-deliberate. "Write some test cases" produces three cases that all pass, and a
+deliberate: "write some test cases" reliably produces three that all pass, and a
 prompt that looks verified and is not.
 
 ## Success criteria
@@ -31,9 +27,8 @@ Size the set to what the prompt does and how often it runs.
 | Classification at volume | at least 20 per class, plus borderline items | see below |
 
 Three cases is a smoke test, not an eval. It catches a prompt that is broken; it
-cannot tell you a prompt is 92 percent right, and it cannot tell you a change
-made things worse. Say which of the two you are delivering rather than letting
-three cases stand in for a measurement.
+cannot tell you a prompt is 92 percent right, and it cannot tell you whether a
+change made things worse.
 
 **Building a large set from a small one.** Hand-write 20 to 30 cases that you
 are certain about, covering every class and every edge you know. Those are the
