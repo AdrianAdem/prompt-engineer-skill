@@ -4,8 +4,11 @@
 What this can and cannot do, stated up front because the distinction matters:
 
 CAN check whether the skill, once applied, produces the right *kind* of answer.
-Each case carries machine-checkable assertions (must_contain, must_not_contain,
-must_produce_files) derived from its expected_output.
+Each case is graded in two layers, following the grading ladder in
+references/evaluation.md: regex assertions for what a regex is the right
+instrument for, and a rubric graded by a second model for everything that needs
+judgment. Keyword matching on a judgment question measures agreement with the
+author's vocabulary rather than quality, which is why the split exists.
 
 CANNOT check triggering. Whether a skill activates on a given phrasing is a
 property of the harness that loads it, not of the model. There is no API call
@@ -61,31 +64,99 @@ def call(model, system, prompt, max_tokens=4000):
     return "".join(b.get("text", "") for b in data.get("content", []))
 
 
-def check(case, output):
-    """Return (passed, [failure descriptions])."""
+GRADER_SYSTEM = """You grade one response against a rubric. You did not write the
+response and you are not being asked to improve it.
+
+For each rubric item, answer MET or NOT MET, then one sentence of evidence quoting
+or pointing at the part of the response that decided it. Judge what the response
+does, not the words it uses to do it: a response that delegates schema
+enforcement to a tool definition has met an item about API-level enforcement
+even if it never uses the phrase.
+
+Output one line per item, in order, formatted exactly:
+<n>. MET|NOT MET - <evidence>
+Then a final line: VERDICT: <met count>/<total>
+Nothing else."""
+
+
+def check_structural(case, output):
+    """Regex assertions only, for things a regex is the right instrument for."""
     problems = []
     low = output.lower()
     for pattern in case.get("must_contain", []):
         if not re.search(pattern, low, re.I):
             problems.append(f"missing: {pattern}")
     for pattern in case.get("must_not_contain", []):
-        if re.search(pattern, low, re.I):
-            m = re.search(pattern, low, re.I)
+        m = re.search(pattern, low, re.I)
+        if m:
             problems.append(f"present but should not be: {pattern} ({m.group(0)[:40]})")
-    lo, hi = case.get("word_range", [0, 10**9])
-    words = len(output.split())
-    if not lo <= words <= hi:
-        problems.append(f"length {words} words, expected {lo} to {hi}")
-    return (not problems), problems
+    return problems
+
+
+def grade_rubric(model, case, output):
+    """Judgment items, graded by a model. Returns (met, total, lines)."""
+    rubric = case.get("rubric") or []
+    if not rubric:
+        return 0, 0, []
+    items = "\n".join(f"{i}. {r}" for i, r in enumerate(rubric, 1))
+    prompt = (f"RUBRIC:\n{items}\n\n"
+              f"REQUEST THE RESPONSE WAS ANSWERING:\n{case['prompt']}\n\n"
+              f"RESPONSE:\n{output}")
+    verdict = call(model, GRADER_SYSTEM, prompt, max_tokens=1500)
+    met = len(re.findall(r"^\s*\d+\.\s*MET\b", verdict, re.M | re.I))
+    return met, len(rubric), verdict.strip().splitlines()
+
+
+SELF_TEST = [
+    # (rubric verdict text, expected met count)
+    ("1. MET - uses a tool definition\n2. NOT MET - no review flag\nVERDICT: 1/2", 1),
+    ("1. NOT MET - rewrites the prompt first\n2. NOT MET - no baseline\nVERDICT: 0/2", 0),
+    ("1. met - lowercase still counts\n2. MET - fine\nVERDICT: 2/2", 2),
+]
+
+
+def self_test():
+    """Exercise the parsing and structural checks without touching the API."""
+    ok = True
+    for text, expected in SELF_TEST:
+        got = len(re.findall(r"^\s*\d+\.\s*MET\b", text, re.M | re.I))
+        status = "ok" if got == expected else "FAIL"
+        if got != expected:
+            ok = False
+        print(f"  rubric parse: expected {expected}, got {got}  {status}")
+
+    case = {"must_contain": [r"\{\{[a-z_]+\}\}"], "must_not_contain": ["respond only in valid json"]}
+    checks = [
+        ("uses {{ticket_text}} and a tool schema", 0),
+        ("no placeholders anywhere", 1),
+        ("uses {{x}} but says respond only in valid JSON", 1),
+    ]
+    for text, expected in checks:
+        n = len(check_structural(case, text))
+        status = "ok" if n == expected else "FAIL"
+        if n != expected:
+            ok = False
+        print(f"  structural:   expected {expected} problem(s), got {n}  {status}")
+    print("self-test passed" if ok else "self-test FAILED")
+    return 0 if ok else 1
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="claude-sonnet-4-5")
+    ap.add_argument("--model", default="claude-sonnet-4-5",
+                    help="model that produces the responses")
+    ap.add_argument("--grader", default="claude-opus-4-5",
+                    help="model that grades them; keep it different from --model, "
+                         "because a model grading its own output is measuring itself")
     ap.add_argument("--case", type=int, help="run a single case by id")
     ap.add_argument("--manual", action="store_true", help="print the manual checklist only")
     ap.add_argument("--dry-run", action="store_true", help="print prompts, make no calls")
+    ap.add_argument("--self-test", action="store_true",
+                    help="check the grading logic offline, no API calls, no quota")
     args = ap.parse_args()
+
+    if args.self_test:
+        return self_test()
 
     spec = json.loads((ROOT / "evals.json").read_text())
     cases = spec["evals"]
@@ -119,18 +190,33 @@ def main():
     for c in auto:
         try:
             out = call(args.model, system, c["prompt"])
-        except urllib.error.HTTPError as e:
-            print(f"[{c['id']}] ERROR {e.code}: {e.read()[:200].decode(errors='replace')}")
+        except (urllib.error.HTTPError, urllib.error.URLError, OSError) as e:
+            detail = e.read()[:200].decode(errors="replace") if hasattr(e, "read") else str(e)
+            print(f"[{c['id']}] ERROR generating: {detail}")
             failed += 1
             continue
-        ok, problems = check(c, out)
-        print(f"[{c['id']}] {'PASS' if ok else 'FAIL'}  {c['prompt'][:60]}...")
+
+        problems = check_structural(c, out)
+        try:
+            met, total, lines = grade_rubric(args.grader, c, out)
+        except (urllib.error.HTTPError, urllib.error.URLError, OSError) as e:
+            # A grader failure must not destroy the response we just paid for.
+            (ROOT / f"out_{c['id']}.txt").write_text(out)
+            print(f"[{c['id']}] ERROR grading: {e}. Response saved to "
+                  f"evals/out_{c['id']}.txt; rerun grading with --case {c['id']}.")
+            failed += 1
+            continue
+        ok = not problems and (total == 0 or met == total)
+        print(f"[{c['id']}] {'PASS' if ok else 'FAIL'}  rubric {met}/{total}  {c['prompt'][:50]}...")
         for p in problems:
-            print(f"      {p}")
+            print(f"      structural: {p}")
+        for line in lines:
+            if re.match(r"\s*\d+\.\s*NOT MET", line, re.I):
+                print(f"      {line.strip()}")
         if not ok:
             failed += 1
-            (ROOT / f"out_{c['id']}.txt").write_text(out)
-            print(f"      full output written to evals/out_{c['id']}.txt")
+            (ROOT / f"out_{c['id']}.txt").write_text(out + "\n\n---- rubric ----\n" + "\n".join(lines))
+            print(f"      full output and rubric written to evals/out_{c['id']}.txt")
 
     print(f"\n{len(auto) - failed}/{len(auto)} automatable cases passed.")
     if manual:
