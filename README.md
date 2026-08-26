@@ -6,10 +6,18 @@ works the other way round: when the request is the work itself, the skill
 supplies the structure for doing it and for briefing subagents, without handing
 back a document about it.
 
-Before writing anything it checks whether a prompt is the right artifact at all,
-because in an agent harness the same instruction can live in a prompt, a hook, a
-skill, a subagent, or a config file, and the placement decides whether it takes
-effect.
+    /prompt an extractor for support tickets, running at volume
+
+Without the skill you get a prompt. With it you get a prompt that names its
+target model class and effort setting, delegates schema enforcement to the API
+instead of asking for JSON in prose, carries an uncertainty field because nobody
+re-reads three thousand classifications a day, and ships with a seed set sized
+to the volume rather than three illustrative cases.
+
+Before any of that it asks a question the other skills skip: is a prompt the
+right artifact at all? A rule that must hold every time is a hook, not a
+paragraph in a config file. Something you intend to paste again next week is a
+skill, not a prompt that drifts across copies.
 
 ## Four modes
 
@@ -19,6 +27,23 @@ encode a requirement learned from a failure. **Migrate** moves a working prompt
 to a different model without conflating the model change with prompt changes.
 **Execute** is for the agent itself: the person asked for the work, not for a
 document about it.
+
+## What it does that other prompt skills do not
+
+- **Routes before it writes.** Prompt, hook, skill, subagent, or config file.
+  The placement decides whether an instruction takes effect at all, and it is
+  the most expensive thing to get wrong in an agent harness.
+- **Treats model class as model times effort.** A frontier model pinned to
+  minimal reasoning wants explicit steps, not goal-level guidance, and defaults
+  shift between model generations. An unpinned effort setting is an unknown
+  class, not an assumed one.
+- **Separates a model change from a prompt change.** Migrate mode switches the
+  model with the prompt untouched, pins effort, takes a baseline, and only then
+  tunes, one change per measurement.
+- **Ships code, not only prose.** A linter that catches the anti-patterns a
+  regex can see, and a flattener that turns the skill into a single system
+  prompt for platforms with no skill mechanism.
+- **Ships its own evals**, and a benchmark that reports its losses.
 
 ## Install
 
@@ -225,6 +250,30 @@ refreshing.
 The **Class 3 guidance for small and open-weight models is the least
 well-sourced** section. It is marked as such in the file. Treat it as a starting
 point and rely on evals more heavily there.
+
+## Does it work
+
+`benchmark/` holds three rounds against three other public prompt-engineering
+skills, on the same two tasks, with a blinded LLM judge and a fixed rubric. The
+raw answers and the task prompts are in the repo.
+
+Two results worth knowing before you install anything.
+
+**This skill wins the routing task and loses the eval-design task.** On "enforce
+a rule on every commit so an agent cannot route around it" it placed first under
+both Opus judges, and the judge's reason was the artifact routing: the agent hook
+and the git hook call the same script, `--no-verify` is blocked, and the test
+case requires the bypass to fail. On "build a classifier prompt for volume" it
+lost to Jeffallan's skill in all three rounds.
+
+**The aggregate ranking from that benchmark is noise, and the benchmark says
+so.** Rounds 1 and 2 used the same answers and the same rubric and differed only
+in the judge instance and the labels; three of four positions moved. The same
+unchanged answer went from first to third when the judge's model changed. Only
+before-and-after comparisons inside one run mean anything, which is exactly how
+the one attributable improvement was measured: rewriting
+`references/evaluation.md` moved this skill's answer from last place to second,
+same run, same judge.
 
 ## Contributing
 
