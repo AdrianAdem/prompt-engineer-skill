@@ -73,6 +73,14 @@ prompts above, the answers under neutral labels, and this text:
        it must have at least one.
     5. Any factual error you found in any answer, quoted.
 
+**Round 3 extension to item 5.** Round 3 only; rounds 1 and 2 used item 5 as
+printed above, word for word. The judge in round 3 received item 5 as:
+
+    5. Any factual error or internal contradiction you found in any answer,
+       quoted. Pay particular attention to constraints inside a prompt that
+       contradict each other, for example a field that is both permitted to
+       be null and declared an error when null.
+
 Round 3 added one line to item 5, asking the judge to look specifically for a
 field both permitted to be null and declared an error when null. That is the
 only wording that differed between rounds, and it was added after the round 2

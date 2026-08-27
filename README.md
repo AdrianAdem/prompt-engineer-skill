@@ -80,6 +80,7 @@ your task as a prompting task at all.
     │   └── evaluation.md               success criteria, edge cases, grading
     ├── scripts/
     │   ├── lint_prompt.py              mechanical anti-pattern check
+    │   ├── lint_all.sh                 lints every file the skill ships
     │   └── build_system_prompt.py      flatten to one file for other platforms
     ├── hooks/
     │   ├── restate-brief.py            optional, see below
@@ -88,7 +89,12 @@ your task as a prompting task at all.
     ├── commands/prompt.md              optional slash command
     └── evals/
         ├── evals.json                  behaviour and triggering cases
-        └── run_evals.py                runner with assertions
+        └── run_evals.py                runner, rubric grading, --self-test
+
+    benchmark/
+    ├── README.md                       method, results, and what the data does not support
+    ├── tasks.md                        both task prompts and both rubric versions
+    └── answers/                        all five responses as the judge saw them
 
 Reference files load only when the task needs them, so the always-on cost is the
 description alone.
@@ -253,7 +259,7 @@ point and rely on evals more heavily there.
 
 ## Does it work
 
-`benchmark/` holds three rounds against three other public prompt-engineering
+[`benchmark/`](benchmark/) holds three rounds against three other public prompt-engineering
 skills, on the same two tasks, with a blinded LLM judge and a fixed rubric. The
 raw answers and the task prompts are in the repo.
 
@@ -272,7 +278,7 @@ in the judge instance and the labels; three of four positions moved. The same
 unchanged answer went from first to third when the judge's model changed. Only
 before-and-after comparisons inside one run mean anything, which is exactly how
 the one attributable improvement was measured: rewriting
-`references/evaluation.md` moved this skill's answer from last place to second,
+[`references/evaluation.md`](prompt-engineer/references/evaluation.md) moved this skill's answer from last place to second,
 same run, same judge.
 
 ## Contributing

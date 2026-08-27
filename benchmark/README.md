@@ -10,7 +10,7 @@ only reports its author's wins is an advertisement.
 ## Method
 
 Four skills, two tasks. Each skill produced **one response covering both
-tasks**, which is how the judge saw it, so `answers/` holds five files and not
+tasks**, which is how the judge saw it, so [`answers/`](answers/) holds five files and not
 ten. Each round relabelled the answers and reshuffled their order. Nothing was
 removed from them: they were checked for traces of their origin by grepping for
 skill and author names, with no hits.
@@ -69,7 +69,7 @@ Per task, because the aggregate turned out not to mean anything (see below).
 **Task 2 is this skill's win, and the judge said why.** It was the only response
 that closed the bypass: the agent hook and the git hook call the same script,
 `--no-verify` is blocked explicitly, and the test case requires the terminal
-bypass to fail. That is the artifact-routing doctrine in `SKILL.md` showing up
+bypass to fail. That is the artifact-routing doctrine in [`SKILL.md`](../prompt-engineer/SKILL.md) showing up
 in the output.
 
 **Task 1 is this skill's loss, three times, against two judge models.** Jeffallan
@@ -80,7 +80,7 @@ The gap did not close.
 
 **One fix is cleanly attributable.** Round 3 held both versions of this skill's
 Task 1 answer, judged together, same judge, same rubric, in the same run. Before
-the rewrite of `references/evaluation.md`: last. After: second. That is the only
+the rewrite of [`references/evaluation.md`](../prompt-engineer/references/evaluation.md): last. After: second. That is the only
 clean before-and-after measurement in the whole exercise, and it is the reason
 the file grew from 445 to 956 words. Being inside one round, it is also the one
 result the rubric change does not touch.
@@ -89,7 +89,7 @@ result the rubric change does not touch.
 contradiction: it told the model to return `null` for an undetermined field and,
 two lines later, that a null field breaks the downstream insert. The judge found
 it independently and reported no comparable contradiction in any other answer.
-The `sentinel-conflict` check in `scripts/lint_prompt.py` exists because of this
+The `sentinel-conflict` check in [`scripts/lint_prompt.py`](../prompt-engineer/scripts/lint_prompt.py) exists because of this
 finding.
 
 ## What the data does not support
@@ -115,8 +115,8 @@ been run.
 
 ## Reproducing it
 
-`tasks.md` holds both task prompts and both rubric versions verbatim, with the
-round 3 extension marked. `answers/` holds all five responses exactly as the
+[`tasks.md`](tasks.md) holds both task prompts and both rubric versions verbatim, with the
+round 3 extension marked. [`answers/`](answers/) holds all five responses exactly as the
 judge saw them, each covering both tasks. Nothing was edited after judging, and
 nothing was removed from the answers before it.
 
