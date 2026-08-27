@@ -204,7 +204,9 @@ For a platform with no skill mechanism, flatten it into one system prompt:
     python scripts/build_system_prompt.py --provider openai -o system-prompt.md
     python scripts/build_system_prompt.py --core -o system-prompt.md
 
-The full build is roughly 8,900 tokens, the core alone roughly 2,000. The
+The full build is roughly 12,000 tokens and the core alone roughly 3,800,
+measured on the current tree; both grow as reference files are added, so
+regenerate rather than trusting these numbers. The
 `--provider` flag drops reference *sections* tagged for a different vendor. It
 does not rewrite `SKILL.md`, which carries no section tags, so a few
 provider-scoped statements survive it, notably the prefill entry in the
@@ -224,8 +226,10 @@ because a skill is *selected*, so it fires some of the time, and some things
 should fire every time the condition holds.
 
 When a request looks like a commission for multi-step work, it injects about 150
-tokens asking for a four-sentence restatement first: the understood goal, the
-assumptions the request did not specify, and the acceptance criteria. That is the
+tokens asking for a short restatement first: the understood goal, the
+assumptions the request did not specify, and the acceptance criteria. It asks
+for the content and deliberately not for a length or a register, so whatever
+response style is already in force keeps applying. That is the
 cheapest possible place to catch a misread brief, and it is a fortieth of the
 cost of writing a full prompt artifact.
 
