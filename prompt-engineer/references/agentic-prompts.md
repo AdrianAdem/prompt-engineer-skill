@@ -26,9 +26,36 @@ evidence for. If tests fail, say so with the output."
 beyond what the task requires. Do the simplest thing that works well. Validate
 only at system boundaries such as user input and external APIs."
 
-**Checkpoint policy.** "Pause for the user only when the work genuinely requires
-them: a destructive or irreversible action, a real scope change, or input only
-they can provide. Otherwise proceed end to end."
+**Checkpoint policy.** Four rules. The first is the one everybody writes; the
+rest are the ones that decide whether an agent is usable.
+
+    Pause for the user only when the work genuinely requires them: a destructive
+    or irreversible action, a real scope change, or input only they can provide.
+    Otherwise proceed end to end.
+
+    Authorization persists across turns. If the user approved an action earlier
+    in this session, or the task itself implies it, do not ask again for the same
+    class of action.
+
+    Do the work first, so approval is the last step. Before a deploy, a merge, a
+    publish, or a write to an external system, finish everything up to that
+    point, so what the user approves is a result they can inspect rather than a
+    plan they have to imagine.
+
+    When you do stop, say which rule required it and where that rule came from,
+    then what you need. A bare request for approval is indistinguishable from
+    timidity, and the user cannot tell whether to answer the question or change
+    the rule.
+
+    Elapsed time is not an answer and not consent. If a question goes
+    unanswered, continue with the work that does not depend on it, or wait.
+
+**Tool-call batching.** "Run independent reads and searches together in one
+round trip. Keep anything with a dependency, a mutation, or an approval
+sequential." Without this an agent serialises twenty file reads that could have
+been one call, which is most of the wall-clock time in a long session. With it
+and without the second half, it fires off writes in parallel and the failure
+modes stop being reproducible.
 
 **Failure visibility** for anything automated: explicit error detection and
 alerting rather than silent fallbacks. A silent fallback in an unattended system
@@ -55,6 +82,23 @@ pauses for permission it already has:
     not done ("I'll...", "let me know when..."), do that work now with tool
     calls. End your turn only when the task is complete or you are blocked on
     input only the user can provide.
+
+**Steering during a long run**, when a message arrives mid-task and the agent
+either ignores it or abandons everything:
+
+    A message that arrives while you are working is steering for the current
+    task, not a replacement for it, unless it clearly cancels the task or asks
+    for something incompatible. Fold corrections, constraints and questions into
+    the work in progress and keep the original objective. If it is a question,
+    answer briefly and carry on.
+
+**After compaction**, when the window is summarised and the agent restarts from
+zero or treats the summary as a new brief:
+
+    Compaction does not end the task. Continue from the summarised state, treat
+    the most recent user message as the latest steering rather than a new
+    objective, and make reasonable assumptions about what the summary dropped.
+    Do not redo completed work or repeat updates you already gave.
 
 **Context budget anxiety**, when the model truncates its work or proposes a fresh
 session as the window fills. In a harness that compacts or persists state, say so

@@ -1,9 +1,16 @@
 # Model classes
 
-Classify by capability signature, not by model name. Names go stale within
-months; the signature does not. The named models below are examples as of
-August 2026 and are the part of this file most likely to be wrong by the time
-you read it. The signatures are the durable part.
+Classify by capability signature, not by model name. This file deliberately
+names no models, because names go stale within months while the signatures do
+not. Between two revisions of it, one vendor shipped a new flagship and renamed
+the tier below it; a list of examples would already have been wrong.
+
+To classify a target you have not met: run a short task that separates the
+classes rather than looking the model up. Give it a goal with success criteria
+and no steps. A Class 1 model plans its own approach and asks about the goal; a
+Class 2 model asks what the steps are or invents a rigid procedure; a Class 3
+model produces something shaped like the request but wrong in a way the request
+did not describe. That test survives every rename.
 
 ## Class is model times effort setting
 
