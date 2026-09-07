@@ -1,4 +1,8 @@
-# prompt-engineer
+<img src="docs/hero.png" alt="prompt-engineer-skill — routes before it writes" width="100%"/>
+
+<p><img src="https://img.shields.io/badge/license-MIT-14150F?style=flat-square" alt="" height="20"/> <img src="https://img.shields.io/badge/agent%20skill-claude%20code-14150F?style=flat-square" alt="" height="20"/> <img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=flat-square" alt="" height="20"/></p>
+
+**Contents** &nbsp;·&nbsp; [Four modes](#four-modes) &nbsp;·&nbsp; [What it does that other prompt skills do not](#what-it-does-that-other-prompt-skills-do-not) &nbsp;·&nbsp; [Does it work](#does-it-work) &nbsp;·&nbsp; [Install](#install) &nbsp;·&nbsp; [Layout](#layout) &nbsp;·&nbsp; [What the skill actually enforces](#what-the-skill-actually-enforces) &nbsp;·&nbsp; [Using it on your own work](#using-it-on-your-own-work) &nbsp;·&nbsp; [Linting a prompt](#linting-a-prompt) &nbsp;·&nbsp; [Running the evals](#running-the-evals) &nbsp;·&nbsp; [Using it outside Claude](#using-it-outside-claude) &nbsp;·&nbsp; [Optional: the restate hook](#optional-the-restate-hook) &nbsp;·&nbsp; [Scope and limits](#scope-and-limits) &nbsp;·&nbsp; [Contributing](#contributing) &nbsp;·&nbsp; [License](#license)
 
 An Agent Skill that turns a request into a production-ready prompt, together with
 the test cases and success criteria needed to tell whether it works. It also
@@ -44,6 +48,30 @@ document about it.
   regex can see, and a flattener that turns the skill into a single system
   prompt for platforms with no skill mechanism.
 - **Ships its own evals**, and a benchmark that reports its losses.
+
+## Does it work
+
+[`benchmark/`](benchmark/) holds three rounds against three other public prompt-engineering
+skills, on the same two tasks, with a blinded LLM judge and a fixed rubric. The
+raw answers and the task prompts are in the repo.
+
+Two results worth knowing before you install anything.
+
+**This skill wins the routing task and loses the eval-design task.** On "enforce
+a rule on every commit so an agent cannot route around it" it placed first under
+both Opus judges, and the judge's reason was the artifact routing: the agent hook
+and the git hook call the same script, `--no-verify` is blocked, and the test
+case requires the bypass to fail. On "build a classifier prompt for volume" it
+lost to Jeffallan's skill in all three rounds.
+
+**The aggregate ranking from that benchmark is noise, and the benchmark says
+so.** Rounds 1 and 2 used the same answers and the same rubric and differed only
+in the judge instance and the labels; three of four positions moved. The same
+unchanged answer went from first to third when the judge's model changed. Only
+before-and-after comparisons inside one run mean anything, which is exactly how
+the one attributable improvement was measured: rewriting
+[`references/evaluation.md`](prompt-engineer/references/evaluation.md) moved this skill's answer from last place to second,
+same run, same judge.
 
 ## Install
 
@@ -260,30 +288,6 @@ refreshing.
 The **Class 3 guidance for small and open-weight models is the least
 well-sourced** section. It is marked as such in the file. Treat it as a starting
 point and rely on evals more heavily there.
-
-## Does it work
-
-[`benchmark/`](benchmark/) holds three rounds against three other public prompt-engineering
-skills, on the same two tasks, with a blinded LLM judge and a fixed rubric. The
-raw answers and the task prompts are in the repo.
-
-Two results worth knowing before you install anything.
-
-**This skill wins the routing task and loses the eval-design task.** On "enforce
-a rule on every commit so an agent cannot route around it" it placed first under
-both Opus judges, and the judge's reason was the artifact routing: the agent hook
-and the git hook call the same script, `--no-verify` is blocked, and the test
-case requires the bypass to fail. On "build a classifier prompt for volume" it
-lost to Jeffallan's skill in all three rounds.
-
-**The aggregate ranking from that benchmark is noise, and the benchmark says
-so.** Rounds 1 and 2 used the same answers and the same rubric and differed only
-in the judge instance and the labels; three of four positions moved. The same
-unchanged answer went from first to third when the judge's model changed. Only
-before-and-after comparisons inside one run mean anything, which is exactly how
-the one attributable improvement was measured: rewriting
-[`references/evaluation.md`](prompt-engineer/references/evaluation.md) moved this skill's answer from last place to second,
-same run, same judge.
 
 ## Contributing
 
