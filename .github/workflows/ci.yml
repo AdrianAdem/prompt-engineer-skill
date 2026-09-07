@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The skill's central claim is that a prompt nobody measured is a prompt
+      # nobody trusts. Asserting that while shipping no checks of its own would
+      # be the same failure one level up, so every check below runs the skill's
+      # own tooling against the skill's own files.
+
+      - name: Lint every prose file the skill ships
+        run: bash scripts/lint_all.sh
+        working-directory: prompt-engineer
+
+      - name: Grading logic self-test (offline, no API calls)
+        run: python evals/run_evals.py --self-test
+        working-directory: prompt-engineer
+
+      - name: Eval set is valid JSON
+        run: python -c "import json,sys; json.load(open('evals/evals.json')); print('evals.json valid')"
+        working-directory: prompt-engineer
+
+      - name: Flattener produces a system prompt
+        run: |
+          python scripts/build_system_prompt.py > /tmp/flattened.md
+          test -s /tmp/flattened.md
+          echo "flattened $(wc -l < /tmp/flattened.md) lines"
+        working-directory: prompt-engineer

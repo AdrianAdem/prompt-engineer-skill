@@ -5,7 +5,7 @@
 ### An Agent Skill that decides what the instruction should even be, then writes it together with the tests that say whether it works.
 
 <p>
-<img src="https://img.shields.io/badge/license-MIT-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/agent%20skill-claude%20code-0057FF?style=for-the-badge&logo=anthropic&logoColor=white&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/passes-its%20own%20linter-6E7065?style=for-the-badge&labelColor=1C1D16" alt=""/>
+<img src="https://img.shields.io/github/actions/workflow/status/AdrianAdem/prompt-engineer-skill/ci.yml?style=for-the-badge&label=CI&labelColor=1C1D16&color=0057FF" alt=""/> <img src="https://img.shields.io/badge/license-MIT-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/agent%20skill-claude%20code-0057FF?style=for-the-badge&logo=anthropic&logoColor=white&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/passes-its%20own%20linter-6E7065?style=for-the-badge&labelColor=1C1D16" alt=""/>
 </p>
 
 <br>
