@@ -5,11 +5,10 @@
 ### An Agent Skill that decides what the instruction should even be, then writes it together with the tests that say whether it works.
 
 <p>
-<img src="https://img.shields.io/badge/license-MIT-14150F?style=for-the-badge" alt="" height="30"/>
-<img src="https://img.shields.io/badge/agent%20skill-claude%20code-14150F?style=for-the-badge&logo=anthropic&logoColor=white" alt="" height="30"/>
-<img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=for-the-badge" alt="" height="30"/>
-<img src="https://img.shields.io/badge/passes-its%20own%20linter-14150F?style=for-the-badge" alt="" height="30"/>
+<img src="https://img.shields.io/badge/license-MIT-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/agent%20skill-claude%20code-0057FF?style=for-the-badge&logo=anthropic&logoColor=white&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/passes-its%20own%20linter-6E7065?style=for-the-badge&labelColor=1C1D16" alt=""/>
 </p>
+
+<br>
 
 </div>
 
