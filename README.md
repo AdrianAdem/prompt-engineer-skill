@@ -1,5 +1,6 @@
-# prompt-engineer
+<img src="docs/hero.png" alt="prompt-engineer-skill — routes before it writes" width="100%"/>
 
+<p><img src="https://img.shields.io/badge/license-MIT-0B0B0D?style=flat-square" alt="" height="20"/> <img src="https://img.shields.io/badge/agent%20skill-claude%20code-0B0B0D?style=flat-square" alt="" height="20"/> <img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-FF3D00?style=flat-square" alt="" height="20"/></p>
 An Agent Skill that turns a request into a production-ready prompt, together with
 the test cases and success criteria needed to tell whether it works. It also
 works the other way round: when the request is the work itself, the skill
