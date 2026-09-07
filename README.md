@@ -1,6 +1,17 @@
-<img src="docs/hero.png" alt="prompt-engineer-skill — routes before it writes" width="100%"/>
+<div align="center">
 
-<p><img src="https://img.shields.io/badge/license-MIT-14150F?style=flat-square" alt="" height="20"/> <img src="https://img.shields.io/badge/agent%20skill-claude%20code-14150F?style=flat-square" alt="" height="20"/> <img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=flat-square" alt="" height="20"/></p>
+<img src="docs/hero.png" alt="prompt-engineer — routes before it writes, then ships the tests" width="100%"/>
+
+### An Agent Skill that decides what the instruction should even be, then writes it together with the tests that say whether it works.
+
+<p>
+<img src="https://img.shields.io/badge/license-MIT-14150F?style=for-the-badge" alt="" height="30"/>
+<img src="https://img.shields.io/badge/agent%20skill-claude%20code-14150F?style=for-the-badge&logo=anthropic&logoColor=white" alt="" height="30"/>
+<img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=for-the-badge" alt="" height="30"/>
+<img src="https://img.shields.io/badge/passes-its%20own%20linter-14150F?style=for-the-badge" alt="" height="30"/>
+</p>
+
+</div>
 
 **Contents** &nbsp;·&nbsp; [Four modes](#four-modes) &nbsp;·&nbsp; [What it does that other prompt skills do not](#what-it-does-that-other-prompt-skills-do-not) &nbsp;·&nbsp; [Does it work](#does-it-work) &nbsp;·&nbsp; [Install](#install) &nbsp;·&nbsp; [Layout](#layout) &nbsp;·&nbsp; [What the skill actually enforces](#what-the-skill-actually-enforces) &nbsp;·&nbsp; [Using it on your own work](#using-it-on-your-own-work) &nbsp;·&nbsp; [Linting a prompt](#linting-a-prompt) &nbsp;·&nbsp; [Running the evals](#running-the-evals) &nbsp;·&nbsp; [Using it outside Claude](#using-it-outside-claude) &nbsp;·&nbsp; [Optional: the restate hook](#optional-the-restate-hook) &nbsp;·&nbsp; [Scope and limits](#scope-and-limits) &nbsp;·&nbsp; [Contributing](#contributing) &nbsp;·&nbsp; [License](#license)
 
