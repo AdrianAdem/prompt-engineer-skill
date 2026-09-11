@@ -1,20 +1,24 @@
 <div align="center">
 
-<img src="docs/hero.png" alt="prompt-engineer — routes before it writes, then ships the tests" width="100%"/>
-
-### An Agent Skill that decides what the instruction should even be, then writes it together with the tests that say whether it works.
-
-<p>
-<img src="https://img.shields.io/github/actions/workflow/status/AdrianAdem/prompt-engineer-skill/ci.yml?style=for-the-badge&label=CI&labelColor=1C1D16&color=0057FF" alt=""/> <img src="https://img.shields.io/badge/license-MIT-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/agent%20skill-claude%20code-0057FF?style=for-the-badge&logo=anthropic&logoColor=white&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/ships-linter%20%2B%20benchmark-0057FF?style=for-the-badge&labelColor=1C1D16" alt=""/> <img src="https://img.shields.io/badge/passes-its%20own%20linter-6E7065?style=for-the-badge&labelColor=1C1D16" alt=""/>
-</p>
+<img src="docs/hero-v2.png" alt="prompt-engineer — From a rough request to a structured prompt, test cases and evaluation criteria." width="100%"/>
 
 <br>
 
+### From a rough request to a structured prompt, test cases and evaluation criteria.
+
+<br>
+
+<a href="#install"><img src="https://img.shields.io/badge/Agent%20skill-Claude%20Code-548BEE?style=for-the-badge&logo=anthropic&logoColor=white" alt="Agent skill: Claude Code"/></a> <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-548BEE?style=for-the-badge" alt="License: MIT"/></a> <a href="#running-the-evals"><img src="https://img.shields.io/badge/Includes-Linter%20%2B%20evals-548BEE?style=for-the-badge" alt="Includes: Linter + evals"/></a> <a href="https://github.com/AdrianAdem/prompt-engineer-skill"><img src="https://img.shields.io/badge/Source-GitHub-737C88?style=for-the-badge&logo=github&logoColor=white" alt="Source: GitHub"/></a>
+
+<br><br>
+
+<a href="#does-it-work">Does it work</a> &nbsp; · &nbsp; <a href="#install">Get started</a> &nbsp; · &nbsp; <a href="#license">License</a>
+
+<br><br>
+
 </div>
 
-**Contents** &nbsp;·&nbsp; [Four modes](#four-modes) &nbsp;·&nbsp; [What it does that other prompt skills do not](#what-it-does-that-other-prompt-skills-do-not) &nbsp;·&nbsp; [Does it work](#does-it-work) &nbsp;·&nbsp; [Install](#install) &nbsp;·&nbsp; [Layout](#layout) &nbsp;·&nbsp; [What the skill actually enforces](#what-the-skill-actually-enforces) &nbsp;·&nbsp; [Using it on your own work](#using-it-on-your-own-work) &nbsp;·&nbsp; [Linting a prompt](#linting-a-prompt) &nbsp;·&nbsp; [Running the evals](#running-the-evals) &nbsp;·&nbsp; [Using it outside Claude](#using-it-outside-claude) &nbsp;·&nbsp; [Optional: the restate hook](#optional-the-restate-hook) &nbsp;·&nbsp; [Scope and limits](#scope-and-limits) &nbsp;·&nbsp; [Contributing](#contributing) &nbsp;·&nbsp; [License](#license)
-
-An Agent Skill that turns a request into a production-ready prompt, together with
+An Agent Skill that turns a request into a structured prompt, together with
 the test cases and success criteria needed to tell whether it works. It also
 works the other way round: when the request is the work itself, the skill
 supplies the structure for doing it and for briefing subagents, without handing
@@ -33,6 +37,8 @@ right artifact at all? A rule that must hold every time is a hook, not a
 paragraph in a config file. Something you intend to paste again next week is a
 skill, not a prompt that drifts across copies.
 
+<br>
+
 ## Four modes
 
 **Create** writes a new prompt. **Revise** improves an existing one and shows a
@@ -41,6 +47,8 @@ encode a requirement learned from a failure. **Migrate** moves a working prompt
 to a different model without conflating the model change with prompt changes.
 **Execute** is for the agent itself: the person asked for the work, not for a
 document about it.
+
+<br>
 
 ## What it does that other prompt skills do not
 
@@ -59,10 +67,12 @@ document about it.
   prompt for platforms with no skill mechanism.
 - **Ships its own evals**, and a benchmark that reports its losses.
 
+<br>
+
 ## Does it work
 
 [`benchmark/`](benchmark/) holds three rounds against three other public prompt-engineering
-skills, on the same two tasks, with a blinded LLM judge and a fixed rubric. The
+skills, on the same two tasks, with a blinded LLM judge and documented rubric versions. The
 raw answers and the task prompts are in the repo.
 
 Two results worth knowing before you install anything.
@@ -82,6 +92,8 @@ before-and-after comparisons inside one run mean anything, which is exactly how
 the one attributable improvement was measured: rewriting
 [`references/evaluation.md`](prompt-engineer/references/evaluation.md) moved this skill's answer from last place to second,
 same run, same judge.
+
+<br>
 
 ## Install
 
@@ -103,6 +115,8 @@ The optional slash command lives in `commands/prompt.md`. Copy it to
 The command is for when you know you are working on a prompt. The skill also
 triggers on its own description, which covers the case where you do not think of
 your task as a prompting task at all.
+
+<br>
 
 ## Layout
 
@@ -137,6 +151,8 @@ your task as a prompting task at all.
 Reference files load only when the task needs them, so the always-on cost is the
 description alone.
 
+<br>
+
 ## What the skill actually enforces
 
 Three things it gets right that are easy to get wrong by hand.
@@ -155,6 +171,8 @@ exactly one item per session and may only flip a status field.
 **Verification means the real surface.** A green unit test and a successful curl
 against a dev server say nothing about whether a user can use the feature.
 
+<br>
+
 ## Using it on your own work
 
 `references/self-and-subagents.md` covers the case where you are the one doing
@@ -168,6 +186,8 @@ For subagent briefs it gives four required parts, the mapping from the agent's
 model tier to the register of the brief, and one rule worth singling out: never
 put your own conclusion in a review brief. "Check whether this is safe, I think
 it is" gets you agreement, which destroys the independence you delegated for.
+
+<br>
 
 ## Linting a prompt
 
@@ -213,6 +233,8 @@ or whether examples are anchoring creative work. Those need a model. Agentic
 build prompts are exempt from the placeholder check, since they are parameterless
 by design.
 
+<br>
+
 ## Running the evals
 
     export ANTHROPIC_API_KEY=...
@@ -228,6 +250,8 @@ Two cases test whether the skill *triggers*, and those are printed as a manual
 checklist instead of being run. Triggering is a property of the harness that
 loads the skill; no API call reproduces it. Pretending otherwise would be the
 exact failure this skill warns about, a green result that proves nothing.
+
+<br>
 
 ## Using it outside Claude
 
@@ -257,6 +281,8 @@ distrust first when something reads as out of date.
 
 Both scripts are standard library only, Python 3.8 or later, no install step.
 
+<br>
+
 ## Optional: the restate hook
 
 `hooks/restate-brief.py` is a `UserPromptSubmit` hook for Claude Code. It exists
@@ -282,6 +308,8 @@ hook is not loaded from there. Copy it to `~/.claude/hooks/` and merge
 `settings-snippet.json` into your `settings.json`. Check the payload field name against your Claude Code
 version; the script tries four common variants.
 
+<br>
+
 ## Scope and limits
 
 The advice is distilled from published prompting guidance from Anthropic, OpenAI,
@@ -299,11 +327,15 @@ The **Class 3 guidance for small and open-weight models is the least
 well-sourced** section. It is marked as such in the file. Treat it as a starting
 point and rely on evals more heavily there.
 
+<br>
+
 ## Contributing
 
 Corrections to model behaviour claims are especially welcome, particularly with a
 reproducible case. The most useful contribution is a prompt this skill handled
 badly, along with what you expected instead.
+
+<br>
 
 ## License
 
