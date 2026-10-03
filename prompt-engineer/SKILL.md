@@ -1,6 +1,6 @@
 ---
 name: prompt-engineer
-description: Turns a request into a production-ready prompt, together with the test cases and success criteria needed to tell whether it works. Use this whenever the user is writing, revising, debugging, or migrating a prompt, system prompt, agent instruction, subagent definition, or skill file. Also use it when they ask why a prompt got worse after a model or version change, when they want an LLM to do some task reliably or at volume, or when they are drafting text that will be pasted into another model. Use it on your own work too: when you are about to structure a multi-step build for yourself, or write a brief for a subagent you are delegating to. Trigger even when the word "prompt" never appears.
+description: Write, revise, debug or migrate a prompt, system prompt, agent instruction, subagent definition or brief, or skill file, and get the test cases that prove it works. Use it when a prompt got worse after a model change, when an LLM has to do a task reliably or at volume, when drafting text for another model, and when structuring a multi-step build or briefing a subagent. Triggers even when the word "prompt" never appears.
 ---
 
 # Prompt Engineer
@@ -35,6 +35,23 @@ Say which artifact you are producing and why in one line, then produce it. If it
 turns out to be a skill, subagent, hook, or config file, the token economy in
 this document does not apply: those are governed by progressive disclosure and
 by discovery. Say so rather than writing a prompt in the shape of the wrong file.
+
+**Routing is a decision, not a remark.** Naming the right artifact and then
+building the one that was asked for is the most common way this step fails, and
+it fails invisibly, because the response reads as thoughtful. Two rules close
+it:
+
+- The routed artifact is the deliverable, produced in full. Not described, not
+  sketched, not left as "you could turn this into a skill by adding
+  frontmatter". If a skill is the answer, write the SKILL.md.
+- If the user also has a real use for the form they asked for, portability to
+  another model being the usual one, that form is secondary, comes after, and is
+  labelled as the export. It never replaces the routed artifact and never leads.
+
+When the routing decision is wrong for a reason you can state, say the reason
+and follow the request. Hedging by delivering both with the requested form
+leading is not a decision; it hands the choice back to the user without the
+information they would need to make it.
 
 Full detail: `references/artifact-routing.md`.
 
@@ -80,8 +97,11 @@ to confirm rather than deleting it.
 
 **migrate.** Do not rewrite the prompt first. Give the user this order and say why
 each step is separate: switch the model with the prompt untouched, so the
-measurement isolates the model change; pin the effort setting to match the old
-model's depth rather than accepting a new default; run the evals for a baseline,
+measurement isolates the model change; re-establish the effort setting on the
+new model by sweeping it, because neither copying the old label nor accepting
+the new default preserves depth: vendors recalibrate what each level means
+between versions, and defaults move even between point releases of one model
+line; run the evals for a baseline,
 and ship if it holds; only on regression tune the prompt, starting with verbosity,
 format, and scope; re-measure after each single change, never bundling an effort
 bump with a prompt edit.
@@ -179,8 +199,14 @@ phrase.
 Remove these on sight, including when revising someone else's prompt:
 
 - Instructions telling a reasoning model to reproduce its reasoning in the
-  response; and conversely, missing chain-of-thought guidance on non-reasoning
-  models for complex tasks
+  response. This has moved from wasteful to failing: current models can decline
+  it outright as a reasoning-extraction request. Conversely, missing
+  chain-of-thought guidance on non-reasoning models for complex tasks
+- Forcing a tool call (`tool_choice` set to `any` or to a named tool) as a way to
+  guarantee output format. Claude Sonnet 5.5 rejects it with a 400, and Opus 5.5
+  is reported to as well. Keep
+  `tool_choice` at `auto`, use strict tool use for the shape, and say in the
+  prompt when the tool applies
 - Prefill-based tricks. On Claude these are unsupported from 4.6 onward and
   return a 400; other providers differ, so check before ruling it out elsewhere
 - Prompt-text JSON enforcement where structured outputs or a strict tool schema
@@ -236,16 +262,20 @@ stale, and it is satisfied by recording a date rather than by an exemption.
 fits it, and validates the two JSON files structurally.
 
 `evals/run_evals.py` runs the cases in `evals/evals.json` against the API and
-checks each output against machine-checkable assertions. Two of the cases test
+grades each output in two layers: regex assertions for structure, and a rubric
+graded by a second model for anything that needs judgment. Two of the cases test
 triggering, which no API call can reproduce, so it prints those as a manual
 checklist instead of pretending to run them.
 
 `scripts/build_system_prompt.py` flattens this skill into a single system prompt
-for platforms that have no skill mechanism. Use it when the user wants this
-capability in ChatGPT, Gemini, a local model, or any client that cannot load
-skills. `--provider openai` drops the sections that only apply to Claude, so the
-result does not assert Anthropic-specific error codes to a model that does not
-have them.
+for platforms that genuinely have no skill mechanism. ChatGPT and Codex are not
+among them: they read the same agent-skills format, with the same progressive
+disclosure, so the skill directory works there unchanged. Reach for the
+flattener for plain chat interfaces, Gemini, local models, and any client that
+cannot load skills. `--provider openai` drops the reference sections tagged for
+Claude. It does not rewrite this file, so the provider-specific statements here,
+such as the 400 errors in the anti-pattern list, survive the filter; each names
+its scope inline.
 
 ## Response format
 

@@ -16,11 +16,17 @@ did not describe. That test survives every rename.
 
 Reasoning models expose an effort or reasoning-level knob, and at the bottom of
 that range they stop behaving like reasoning models. A frontier model pinned to
-no or minimal reasoning wants Class 2 prompting: explicit steps, told how rather
-than what.
+its lowest setting wants Class 2 prompting: explicit steps, told how rather than
+what. On some current models thinking cannot be switched off at all, and the
+lowest setting still reasons between tool calls; prompt it as Class 2 and verify
+rather than assume.
 
-Defaults differ by generation and are not stable across releases. Treat an
-unpinned effort setting as an unknown class and say so. Where the target exposes
+Defaults differ between generations and even between point releases of the same
+model line, and vendors recalibrate what each effort label means from one
+version to the next. A setting therefore does not transfer: "high" on the new
+version is not "high" on the old one. Treat an unpinned effort setting as an
+unknown class and say so, and after any model change re-sweep the setting rather
+than carrying it over. Where the target exposes
 effort, recommend a level alongside the prompt: high or above for
 intelligence-sensitive and agentic work, lower for latency-bound and mechanical
 tasks, with the caveat that the top of the range can tip into overthinking.
@@ -40,8 +46,10 @@ is decomposed for it.
   micromanagement unless the steps are domain requirements.
 - Never instruct the model to reproduce or explain its internal reasoning in the
   response ("think step by step in thinking tags", "show your reasoning"). These
-  models reason internally on their own; such instructions add nothing and on
-  some models can trigger refusals. If reasoning structure is needed in the
+  models reason internally on their own; such instructions add nothing, and
+  current models can decline them outright, since at least one vendor lists
+  requests to reproduce internal reasoning as their own refusal category. If
+  reasoning structure is needed in the
   *output*, as a rubric, a hypothesis log, or a decision record, frame it as an
   output artifact and say so.
 - Do not feed a model's own extended thinking back to it in a later user turn. It
@@ -54,7 +62,7 @@ is decomposed for it.
 ## Class 2: no effective reasoning pass
 
 Signature: no internal reasoning pass, either because the model has none or
-because effort is pinned to none or minimal. Strong instruction following.
+because effort is pinned to its lowest setting. Strong instruction following.
 Benefits from being told how, not just what.
 
 - Precise, explicit instructions. Numbered steps for multi-part work.

@@ -37,14 +37,15 @@
     {
       "id": 3,
       "prompt": "Write me a prompt I can paste in every time I want the model to check my code against our style guide.",
-      "expected_output": "Routes to a skill rather than a prompt, says why in one line (a thing pasted repeatedly drifts across copies), then produces the skill with frontmatter.",
+      "expected_output": "Routes to a skill, produces the SKILL.md in full as the primary deliverable, and states why a repeatedly pasted prompt drifts. Any pasteable form is secondary and labelled.",
       "must_contain": [
         "description:"
       ],
       "rubric": [
-        "The response produces a skill, or another reusable artifact, rather than a prompt to paste repeatedly.",
+        "The routed artifact, a skill or other reusable form, is produced in full as the primary deliverable, not described or sketched.",
         "It states in roughly one line why a repeatedly pasted prompt is the wrong artifact.",
-        "The artifact it produces is complete enough to use, not an outline."
+        "If a pasteable prompt is also supplied, it comes after the routed artifact and is labelled as a secondary export, not offered as the main answer.",
+        "The produced artifact is complete enough to use, including any frontmatter or fields its format requires."
       ]
     },
     {

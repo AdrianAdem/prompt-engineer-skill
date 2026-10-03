@@ -57,6 +57,15 @@ model says, and strict tool use constrains how it calls your functions. They
 combine in one request. The numeric limits and failure modes below are Claude's;
 the shape of the advice transfers, the numbers do not.
 
+Strict tool use constrains the *shape* of a call, not *whether* it happens.
+Forcing the call with `tool_choice` set to `any` or to a named tool returns a
+400 on Claude Sonnet 5.5 per Anthropic's documentation, and OpenRouter's
+migration guide reports the same for Opus 5.5 (both as of October 2026). Keep `tool_choice` at `auto`, set `strict: true`
+for schema-valid input, state in the prompt when the tool applies, and check
+that a call was actually made, retrying if not. When the structured result is
+the deliverable rather than an action, structured outputs are the better fit:
+they constrain the response itself and need no call to happen at all.
+
 - Prefer required fields over optional ones, and mark only the tools that matter
   as strict. Optional parameters and union types are what blow up grammar
   compilation, and the limits apply per request across all schemas, not per tool.
@@ -82,8 +91,10 @@ still allow assistant-turn continuation, so check before ruling it out
 elsewhere; the migrations below are better practice regardless. Migrations for the four things
 people used it for:
 
-- Forcing a format: structured outputs, a strict tool schema, or simply
-  instructing the format, which newer models match reliably, with retries.
+- Forcing a format: structured outputs, a strict tool schema under
+  `tool_choice: auto` (forcing the call itself is no longer accepted either), or
+  simply instructing the format, which newer models match reliably, with
+  retries.
 - Killing preambles: "Respond directly without preamble", or wrap the answer in
   an XML tag and extract it, or strip it in post-processing.
 - Continuations: move the continuation into the user turn, quoting the
@@ -92,6 +103,29 @@ people used it for:
   through a tool.
 
 Prefilling extended thinking was never allowed and still is not.
+
+## Conversation history is append-only [anthropic]
+
+On Claude Sonnet 5.5 a thinking block is tied to everything before it, per
+Anthropic's documentation as of October 2026; check the target model's own page
+before assuming the same elsewhere. A request that replays such a block after the
+system prompt, the tool list, or an earlier message was edited can return a 400,
+and on accounts created on or after 31 August 2026 that check is on by default. Harnesses that rewrite their system prompt between turns, or that
+trim old messages in place, break here first.
+
+Keep history append-only. To change instructions or tools mid-run, send a
+mid-conversation system message rather than editing what came before. This
+belongs in the delivery notes of any agentic prompt whose harness edits context.
+
+## Refusals are a stop reason, not an empty answer [anthropic]
+
+A declined request returns HTTP 200 with `stop_reason: "refusal"` and a category
+naming the policy area. A pipeline that only reads the text sees an empty or
+short response and treats it as a bad answer, which sends you tuning a prompt
+that was never the problem. Check the stop reason before grading or retrying,
+and report refusals separately. The same applies to `stop_reason: "max_tokens"`:
+on models where thinking always runs, `max_tokens` covers thinking plus the
+answer, so a budget sized for the answer alone truncates it.
 
 ## Testing note [universal]
 
