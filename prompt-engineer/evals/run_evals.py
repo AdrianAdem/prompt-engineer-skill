@@ -19,7 +19,7 @@ Usage:
     export ANTHROPIC_API_KEY=...
     python evals/run_evals.py                       # run automatable cases
     python evals/run_evals.py --manual              # print the manual checklist
-    python evals/run_evals.py --model claude-opus-5
+    python evals/run_evals.py --model claude-opus-5-5
     python evals/run_evals.py --case 2
     python evals/run_evals.py --dry-run             # show prompts, call nothing
 """
@@ -47,7 +47,18 @@ def load_skill():
     return text.strip()
 
 
-def call(model, system, prompt, max_tokens=4000):
+class StopError(Exception):
+    """The model stopped for a reason other than finishing its answer."""
+
+
+# On models where thinking always runs, max_tokens covers thinking plus the
+# answer. A budget sized for the answer alone truncates it, and the truncated
+# text then fails the rubric for a reason that has nothing to do with the skill.
+GEN_MAX_TOKENS = 16000
+GRADE_MAX_TOKENS = 8000
+
+
+def call(model, system, prompt, max_tokens=GEN_MAX_TOKENS):
     body = json.dumps({
         "model": model,
         "max_tokens": max_tokens,
@@ -61,7 +72,16 @@ def call(model, system, prompt, max_tokens=4000):
     })
     with urllib.request.urlopen(req, timeout=300) as r:
         data = json.load(r)
-    return "".join(b.get("text", "") for b in data.get("content", []))
+    stop = data.get("stop_reason")
+    text = "".join(b.get("text", "") for b in data.get("content", []))
+    # A refusal arrives as HTTP 200 with little or no text. Grading it would
+    # report a bad answer and send you tuning a prompt that was never the problem.
+    if stop == "refusal":
+        category = (data.get("stop_details") or {}).get("category", "unspecified")
+        raise StopError(f"refusal ({category})")
+    if stop == "max_tokens":
+        raise StopError(f"truncated at max_tokens={max_tokens}; raise the budget")
+    return text
 
 
 GRADER_SYSTEM = """You grade one response against a rubric. You did not write the
@@ -102,7 +122,7 @@ def grade_rubric(model, case, output):
     prompt = (f"RUBRIC:\n{items}\n\n"
               f"REQUEST THE RESPONSE WAS ANSWERING:\n{case['prompt']}\n\n"
               f"RESPONSE:\n{output}")
-    verdict = call(model, GRADER_SYSTEM, prompt, max_tokens=1500)
+    verdict = call(model, GRADER_SYSTEM, prompt, max_tokens=GRADE_MAX_TOKENS)
     met = len(re.findall(r"^\s*\d+\.\s*MET\b", verdict, re.M | re.I))
     return met, len(rubric), verdict.strip().splitlines()
 
@@ -143,9 +163,9 @@ def self_test():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default="claude-sonnet-4-5",
+    ap.add_argument("--model", default="claude-sonnet-5-5",
                     help="model that produces the responses")
-    ap.add_argument("--grader", default="claude-opus-4-5",
+    ap.add_argument("--grader", default="claude-opus-5-5",
                     help="model that grades them; keep it different from --model, "
                          "because a model grading its own output is measuring itself")
     ap.add_argument("--case", type=int, help="run a single case by id")
@@ -189,7 +209,12 @@ def main():
     failed = 0
     for c in auto:
         try:
-            out = call(args.model, system, c["prompt"])
+            try:
+                out = call(args.model, system, c["prompt"])
+            except StopError as e:
+                print(f"[{c['id']}] STOPPED generating: {e}")
+                failed += 1
+                continue
         except (urllib.error.HTTPError, urllib.error.URLError, OSError) as e:
             detail = e.read()[:200].decode(errors="replace") if hasattr(e, "read") else str(e)
             print(f"[{c['id']}] ERROR generating: {detail}")
@@ -198,7 +223,14 @@ def main():
 
         problems = check_structural(c, out)
         try:
-            met, total, lines = grade_rubric(args.grader, c, out)
+            try:
+                met, total, lines = grade_rubric(args.grader, c, out)
+            except StopError as e:
+                (ROOT / f"out_{c['id']}.txt").write_text(out)
+                print(f"[{c['id']}] STOPPED grading: {e}. Response saved to "
+                      f"evals/out_{c['id']}.txt")
+                failed += 1
+                continue
         except (urllib.error.HTTPError, urllib.error.URLError, OSError) as e:
             # A grader failure must not destroy the response we just paid for.
             (ROOT / f"out_{c['id']}.txt").write_text(out)

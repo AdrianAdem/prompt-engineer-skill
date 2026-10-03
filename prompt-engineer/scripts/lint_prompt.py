@@ -23,7 +23,8 @@ CHECKS = [
      r"(?i)\b(think step by step|show your (reasoning|thinking|work)|explain your reasoning|"
      r"<thinking>|in thinking tags|walk me through your thought)",
      "Instructs the model to reproduce its reasoning. On internal-reasoning models "
-     "this adds nothing and can trigger refusals. If the OUTPUT needs a reasoning "
+     "this adds nothing and current models can decline it as a reasoning-extraction "
+     "request. If the OUTPUT needs a reasoning "
      "artifact, frame it as an output artifact instead.", {"1"}),
 
     ("missing-cot", "warn",
@@ -78,7 +79,7 @@ CHECKS = [
      r"|\bclaude[- ]\d(?:[-.]\d)*[- ](opus|sonnet|haiku|instant)"
      # oldest Claude ids carry no tier at all: claude-2.1, claude-instant-1.2
      r"|\bclaude-(instant-)?\d+(\.\d+)*\b"
-     r"|\bgpt-[45][\w.-]*|\bgpt-4o\b"
+     r"|\bgpt-\d[\w.-]*|\bgpt-4o\b"
      r"|\bgemini[- ][\d.]+|\bo[1-9]\b|\bllama[- ]?[\d.]+|\bqwen[\d.-]*"
      r")",
      "Hardcoded model name. In a reusable template, add a date or describe the "

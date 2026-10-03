@@ -71,8 +71,11 @@ Use the fastest reliable method.
    constraint requirements reduce to this if you design them to.
 2. **LLM-based**: where judgment is required. Write an explicit rubric with a
    hard failure condition, force a categorical or 1-to-5 verdict rather than
-   prose, let the grader reason before scoring and discard that reasoning, and
-   grade with a different model than the one that generated the output.
+   prose, and grade with a different model than the one that generated the
+   output. Ask for the verdict plus one sentence of evidence pointing at the
+   part of the output that decided it. Do not ask the grader to write out its
+   reasoning first: on a model that reasons internally that is the
+   reasoning-reproduction pattern, and current models can decline it.
 3. **Human**: only where nothing else works.
 
 Calibrate an LLM grader before trusting it: run it over 20 cases you have graded
