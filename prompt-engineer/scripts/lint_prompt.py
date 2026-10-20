@@ -39,19 +39,22 @@ CHECKS = [
      r"(?i)((?:^|[.!?:]\s+|\byou (?:should |must |need to )?)"
      r"think (very |really )?(carefully|hard|harder|deeply|longer)\b|"
      r"\b(don't|do not|never|no need to) (over)?think\b)",
-     "Prompt text trying to set how much the model thinks. On current Claude "
-     "models the effort setting is the dial that works: 'think carefully' adds "
-     "latency without a measured gain, and 'don't think' lines do not reduce "
-     "thinking and can leak internal tags into the output. Other providers "
-     "differ; Google's Gemini guide says 'think very hard' can help there.", {"1"}),
+     "A line that tries to set how much the model thinks. On current Claude "
+     "models, lowering the effort setting cuts thinking more reliably than any "
+     "prompt line, 'don't think' rules can leak internal tags into the output, "
+     "and 'think carefully' boilerplate in a chat prompt added latency on Opus "
+     "5.5 without a gain. Targeted lines can help ('Think the problem through "
+     "before you answer' on Sonnet 5.5 with structured output; 'think very hard' "
+     "on Gemini), so keep one only where an eval shows it earns its place.", {"1"}),
 
     ("forced-tool-choice", "warn",
      r"(?i)tool_choice[\"'`\s:={]*(type[\"'`\s:=]*)?[\"'`]?(any|tool)\b|"
      r"tool_choice\W{0,3}\s*(set )?to\s+\W?(any|a named tool)\b",
      "Forces a tool call. Claude Sonnet 5.5 rejects tool_choice 'any' or a named "
-     "tool with a 400 (as of October 2026; reported for Opus 5.5 too). Keep it at "
-     "'auto', use strict tool use for the shape, and say in the prompt when the "
-     "tool applies. Other providers differ.", None),
+     "tool with a 400 (as of October 2026; reported for Opus 5.5 too), while "
+     "Anthropic documents forcing as a fix on Haiku 5.5. Check the target. Where "
+     "it is rejected, keep 'auto', use strict tool use for the shape, and say in "
+     "the prompt when the tool applies. Other providers differ.", None),
 
     ("prefill", "error",
      r"(?i)(prefill|pre-fill|assistant.{0,20}turn.{0,20}(start|begin)s? with|"

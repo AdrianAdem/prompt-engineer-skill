@@ -40,7 +40,7 @@ redundancy that set needs before it holds:
 
 | Class | Count | Why |
 |---|---|---|
-| 1, internal reasoning | 2 to 5 | Generalises from few. More examples narrow the space it would otherwise explore usefully. |
+| 1, internal reasoning | 3 to 5 | Anthropic's recommendation for its current models. Generalises from few, and more examples narrow the space it would otherwise explore usefully. |
 | 2, no reasoning pass | 3 to 6 | Needs the pattern shown more than once to hold it across a long prompt. |
 | 3, small and open-weight | 4 to 6 | Examples are the primary steering tool, not a supplement to the description. |
 

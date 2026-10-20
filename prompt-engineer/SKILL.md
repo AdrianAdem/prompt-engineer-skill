@@ -130,7 +130,7 @@ the task needs, in whatever order serves clarity:
   it are data; see untrusted input in `references/delivery-mechanics.md`
 - `<success_criteria>` what a correct output looks like, in checkable terms
 - `<constraints>` only those overriding default behaviour, each with its reason
-- `<examples>` only when consistency demands them; 2 to 5 on a Class 1 target,
+- `<examples>` only when consistency demands them; 3 to 5 on a Class 1 target,
   more on weaker classes, see `references/examples.md` for the gradient and for
   what the set must cover
 - `<output_format>` length, structure, required sections, output language
@@ -210,20 +210,25 @@ phrase.
 Remove these on sight, including when revising someone else's prompt:
 
 - Instructions telling a reasoning model to reproduce its reasoning in the
-  response. This has moved from wasteful to failing: current models can decline
-  it outright as a reasoning-extraction request. Conversely, missing
-  chain-of-thought guidance on non-reasoning models for complex tasks
-- On Claude, prompt text that tries to dial thinking up or down ("think
-  carefully", "think hard", "don't overthink"). On the current Claude models the
-  effort setting is the control that works: "think carefully" adds latency
-  without a measured gain, and "don't think" lines do not reduce thinking and
-  can leak internal tags into the output. Providers differ here: Google's guide
-  for its current Gemini models says a plain "think very hard" can help
-- Forcing a tool call (`tool_choice` set to `any` or to a named tool) as a way to
-  guarantee output format. Claude Sonnet 5.5 rejects it with a 400, and Opus 5.5
-  is reported to as well. Keep
-  `tool_choice` at `auto`, use strict tool use for the shape, and say in the
-  prompt when the tool applies
+  response, whether they sit in a prompt, a skill, or a tool description. This
+  has moved from wasteful to failing: current models can decline it outright
+  as a reasoning-extraction request, while a short explanation of the answer
+  is still fine. Conversely, missing chain-of-thought guidance on
+  non-reasoning models for complex tasks
+- On Claude, lines meant to cut thinking ("don't think", "don't overthink"),
+  and "think carefully" boilerplate in chat system prompts. Lowering the effort
+  setting cuts thinking more reliably than any prompt line, "don't think" rules
+  can leak internal tags into the output, and on Opus 5.5 removing "think
+  carefully" made replies start sooner with no clear loss. Targeted lines are a
+  different matter: "Think the problem through before you answer" measurably
+  helps Sonnet 5.5 on reasoning tasks with structured output, and Google says a
+  plain "think very hard" can help Gemini. Keep a thinking line only where an
+  eval shows it earns its place
+- Forcing a tool call (`tool_choice` set to `any` or to a named tool) without
+  checking that the target accepts it. Claude Sonnet 5.5 rejects it with a 400
+  and Opus 5.5 reportedly does too, while Anthropic documents it as a fix on
+  Haiku 5.5. Where it is rejected, keep `tool_choice` at `auto`, use strict
+  tool use for the shape, and say in the prompt when the tool applies
 - Prefill-based tricks. On Claude these are unsupported from 4.6 onward and
   return a 400; other providers differ, so check before ruling it out elsewhere
 - Prompt-text JSON enforcement where structured outputs or a strict tool schema

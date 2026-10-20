@@ -17,21 +17,27 @@ did not describe. That test survives every rename.
 Reasoning models expose an effort or reasoning-level knob, and at the bottom of
 that range they stop behaving like reasoning models. A frontier model pinned to
 its lowest setting wants the structural half of Class 2 prompting: explicit
-steps, told how rather than what. It does not want the other half. Asking it to
-write its reasoning into the response in place of thinking is the
-reasoning-reproduction pattern, and current models decline it; when the task
-needs more reasoning than the lowest setting gives, raise the setting instead.
+steps, told how rather than what. Whether it wants the other half depends on
+the model, even within one vendor's line-up. Several current models decline a
+request to write their reasoning into the response in place of thinking, as a
+reasoning-extraction request; for others, written chain of thought with the
+answer in its own tag is still the documented fallback when thinking is
+switched off. Check the target's guide. Either way, when the task needs more reasoning than the lowest setting
+gives, raising the setting is the stronger lever.
 On some current models thinking cannot be switched off at all, and the lowest
 setting still reasons between tool calls. Verify the class with a run rather
 than assume it.
 
 Where a model has an effort setting, that setting is the dependable dial for
-how much it thinks. Anthropic's guidance for its current models (as of October
-2026) is to remove prompt lines that try to turn thinking up or down ("think
-carefully", "don't overthink") and change the setting instead. This is
-vendor-specific: Google's guide for its current models says a plain "think very
-hard" can help there. Check the target's own guidance before removing such a
-line.
+how much it thinks. Prompt lines are a secondary lever, and their direction
+matters. Lines meant to cut thinking do not cut it reliably, and Anthropic's
+guidance for its current models (as of October 2026) is to remove them and
+lower the setting. Lines that ask for more are model- and task-specific: a
+targeted "think the problem through before you answer" measurably helps one of
+Anthropic's current models on reasoning tasks with structured output, generic
+"think carefully" boilerplate in a chat system prompt only added latency on
+another, and Google says a plain "think very hard" can help its models. Keep
+such a line only where an eval shows it earns its place.
 
 Defaults differ between generations and even between point releases of the same
 model line, and vendors recalibrate what each effort label means from one

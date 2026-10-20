@@ -302,7 +302,7 @@ For a platform with no skill mechanism, flatten it into one system prompt:
     python scripts/build_system_prompt.py --provider openai -o system-prompt.md
     python scripts/build_system_prompt.py --core -o system-prompt.md
 
-The full build is roughly 15,500 tokens and the core alone roughly 4,300,
+The full build is roughly 17,800 tokens and the core alone roughly 4,400,
 measured on the current tree; both grow as the skill does, so
 regenerate rather than trusting these numbers. The
 `--provider` flag drops reference *sections* tagged for a different vendor. It

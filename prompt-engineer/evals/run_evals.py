@@ -186,6 +186,10 @@ def call(model, system, prompt, effort, max_tokens):
         raise StopError(f"refusal ({category})")
     if stop == "max_tokens":
         raise StopError(f"truncated at max_tokens={max_tokens}; raise the budget")
+    # Some models occasionally put the whole answer in the thinking and return
+    # no visible text. Grading an empty string would blame the skill for it.
+    if not text.strip():
+        raise StopError(f"empty reply (stop_reason {stop}); the answer may be in the thinking")
     return text
 
 

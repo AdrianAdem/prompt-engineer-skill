@@ -72,7 +72,9 @@ around the rule. A prompt or a generated script that enforces something is only
 verified by a case that attempts the bypass and is expected to fail. A rule
 tested only with compliant input is untested. For a template that reads text
 from outside, the bypass case is an input carrying an instruction aimed at the
-model.
+model. For a chatbot holding a rule, Anthropic's testing names the shapes worth
+covering: the user argues, gives a sympathetic reason, asks for just a small
+part, claims that someone approved an exception, or keeps asking.
 
 ## Grading ladder
 
