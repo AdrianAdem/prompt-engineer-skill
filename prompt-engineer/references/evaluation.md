@@ -30,6 +30,16 @@ Three cases is a smoke test, not an eval. It catches a prompt that is broken; it
 cannot tell you a prompt is 92 percent right, and it cannot tell you whether a
 change made things worse.
 
+**Runs per case.** A model's output is a sample, so one run per case is an
+anecdote. Run each case at least three times and report the pass rate per case;
+a case that passes two runs of three is a finding, not a pass. Graders vary too,
+which is what the calibration below is for.
+
+**A baseline arm.** When the thing under test is an addition to something that
+already works, a skill, a new section, a system prompt, run the same cases
+without it and report the difference. A suite that scores 80 percent says
+little if the bare model scores 78.
+
 **Building a large set from a small one.** Hand-write 20 to 30 cases that you
 are certain about, covering every class and every edge you know. Those are the
 seed. Then generate the bulk from them: vary phrasing, length, formality,
@@ -60,7 +70,9 @@ break prompts in production:
 For anything that enforces a rule, add a fifth: an input that tries to get
 around the rule. A prompt or a generated script that enforces something is only
 verified by a case that attempts the bypass and is expected to fail. A rule
-tested only with compliant input is untested.
+tested only with compliant input is untested. For a template that reads text
+from outside, the bypass case is an input carrying an instruction aimed at the
+model.
 
 ## Grading ladder
 

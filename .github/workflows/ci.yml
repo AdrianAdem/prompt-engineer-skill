@@ -24,17 +24,53 @@ jobs:
         run: bash scripts/lint_all.sh
         working-directory: prompt-engineer
 
-      - name: Grading logic self-test (offline, no API calls)
+      - name: Eval cases parse and meet the floor (offline, no API calls)
         run: python evals/run_evals.py --self-test
         working-directory: prompt-engineer
 
-      - name: Eval set is valid JSON
-        run: python -c "import json,sys; json.load(open('evals/evals.json')); print('evals.json valid')"
+      - name: Flattener produces every build
+        run: |
+          for mode in "" --core; do
+            python scripts/build_system_prompt.py $mode > /tmp/flattened.md
+            test -s /tmp/flattened.md
+            echo "build ${mode:-full}: $(wc -w < /tmp/flattened.md) words"
+          done
         working-directory: prompt-engineer
 
-      - name: Flattener produces a system prompt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The marketplace is how installed copies receive updates, so a manifest
+      # that does not validate breaks every user's update, not just this build.
+      - name: Plugin and marketplace manifests validate
         run: |
-          python scripts/build_system_prompt.py > /tmp/flattened.md
-          test -s /tmp/flattened.md
-          echo "flattened $(wc -l < /tmp/flattened.md) lines"
-        working-directory: prompt-engineer
+          npm install --global @anthropic-ai/claude-code
+          claude plugin validate --strict prompt-engineer
+          claude plugin validate --strict .
+
+  version-bump:
+    # Installed copies update only when the version changes. A merged change
+    # without a bump ships to nobody, silently, which is the failure this
+    # check exists to make loud.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Plugin changes come with a version bump
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          if git diff --quiet FETCH_HEAD -- prompt-engineer; then
+            echo "prompt-engineer/ unchanged, no bump needed"
+            exit 0
+          fi
+          manifest=prompt-engineer/.claude-plugin/plugin.json
+          read_version='import json,sys; print(json.load(sys.stdin).get("version", "none"))'
+          old=$(git show "FETCH_HEAD:$manifest" 2>/dev/null | python3 -c "$read_version" 2>/dev/null || echo none)
+          new=$(python3 -c "$read_version" < "$manifest")
+          if [ "$old" = "$new" ]; then
+            echo "::error file=$manifest::prompt-engineer/ changed but the version is still $new. Bump it, or installed copies will not receive this change."
+            exit 1
+          fi
+          echo "version $old -> $new"

@@ -16,7 +16,10 @@ reviewing its own reasoning in the same context inherits its own blind spots.
 **End-to-end verification, not unit-level.** Models will run unit tests or curl a
 dev server and conclude a feature works when it does not work for a user. Where
 the task has a user-facing surface, require verification through that surface:
-browser automation, the actual CLI, the real endpoint.
+browser automation, the actual CLI, the real endpoint. A syntax-only check does
+not count, and if no real check can run, the agent says which one it skipped
+and why. Without that line, Claude Sonnet 5.5 at low effort sometimes reports
+changes as done without having run anything (Anthropic, October 2026).
 
 **Grounded progress claims.** "Before reporting progress, audit each claim
 against an actual result from this session. Only report work you can point to
@@ -25,6 +28,13 @@ evidence for. If tests fail, say so with the output."
 **Scope boundaries.** "Do not add features, refactor, or introduce abstractions
 beyond what the task requires. Do the simplest thing that works well. Validate
 only at system boundaries such as user input and external APIs."
+
+At the top of the effort range, current models also add review and hardening
+rounds nobody asked for. Anthropic reports that a line such as "Don't start
+extra rounds of review or hardening on your own" cut cost by about a third on
+Claude Sonnet 5.5 (as of October 2026) with no loss in quality. If the prompt
+wants verifier subagents, as the rule above does, say so explicitly, because a
+scope line like that one otherwise suppresses them.
 
 **Checkpoint policy.** Four rules. The first is the one everybody writes; the
 rest are the ones that decide whether an agent is usable.
@@ -82,6 +92,14 @@ pauses for permission it already has:
     not done ("I'll...", "let me know when..."), do that work now with tool
     calls. End your turn only when the task is complete or you are blocked on
     input only the user can provide.
+
+The prompt-side fix has a harness-side counterpart. A turn can end with text
+while work remains, so treat it as a report, not as completion. If the task
+list still has open items and no stated blocker, send a continuation ("Your
+task list still has open items. Continue with them, and if one is blocked, say
+what blocks it"), and cap automatic continuations at two or three per task so a
+run that is genuinely stuck stops. A task is not done while background commands
+or subagents it started are still running.
 
 **Steering during a long run**, when a message arrives mid-task and the agent
 either ignores it or abandons everything:

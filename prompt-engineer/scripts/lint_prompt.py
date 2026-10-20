@@ -29,8 +29,28 @@ CHECKS = [
 
     ("missing-cot", "warn",
      None,  # handled separately
-     "No chain-of-thought guidance found. Class 2 and 3 models need it explicitly "
-     "for multi-step work.", {"2", "3"}),
+     "No chain-of-thought guidance found. Models with no reasoning pass need it "
+     "explicitly for multi-step work. If the target is a reasoning model run at its "
+     "lowest effort setting, ignore this and raise the effort instead: asking such a "
+     "model to write its reasoning into the response can be declined.", {"2", "3"}),
+
+    ("thinking-control", "warn",
+     # Only instructions aimed at the model: sentence-initial, or after "you".
+     r"(?i)((?:^|[.!?:]\s+|\byou (?:should |must |need to )?)"
+     r"think (very |really )?(carefully|hard|harder|deeply|longer)\b|"
+     r"\b(don't|do not|never|no need to) (over)?think\b)",
+     "Prompt text trying to set how much the model thinks. On current reasoning "
+     "models the effort setting is the dial that works: 'think carefully' adds "
+     "latency without a measured gain, and 'don't think' lines do not reduce "
+     "thinking and can leak internal tags into the output.", {"1"}),
+
+    ("forced-tool-choice", "warn",
+     r"(?i)tool_choice[\"'`\s:={]*(type[\"'`\s:=]*)?[\"'`]?(any|tool)\b|"
+     r"tool_choice\W{0,3}\s*(set )?to\s+\W?(any|a named tool)\b",
+     "Forces a tool call. Claude Sonnet 5.5 rejects tool_choice 'any' or a named "
+     "tool with a 400 (as of October 2026; reported for Opus 5.5 too). Keep it at "
+     "'auto', use strict tool use for the shape, and say in the prompt when the "
+     "tool applies. Other providers differ.", None),
 
     ("prefill", "error",
      r"(?i)(prefill|pre-fill|assistant.{0,20}turn.{0,20}(start|begin)s? with|"
@@ -125,7 +145,8 @@ CHECK_ID_RE = re.compile(r"[a-z][a-z0-9-]*[a-z0-9]", re.I)
 # instructions and model versions; linting prose about an anti-pattern as if it
 # were the anti-pattern is a category error.
 DOC_EXEMPT = {"prefill", "reasoning-reproduction", "sentinel-conflict",
-              "no-placeholders", "prompt-text-json", "filler-role"}
+              "no-placeholders", "prompt-text-json", "filler-role",
+              "thinking-control", "forced-tool-choice"}
 
 # "undated-model" stays live even in docs mode: its whole point is the staleness
 # reminder, and reference documentation is the first thing to go stale. Instead
