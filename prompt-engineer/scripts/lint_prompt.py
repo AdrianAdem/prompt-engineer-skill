@@ -39,10 +39,11 @@ CHECKS = [
      r"(?i)((?:^|[.!?:]\s+|\byou (?:should |must |need to )?)"
      r"think (very |really )?(carefully|hard|harder|deeply|longer)\b|"
      r"\b(don't|do not|never|no need to) (over)?think\b)",
-     "Prompt text trying to set how much the model thinks. On current reasoning "
+     "Prompt text trying to set how much the model thinks. On current Claude "
      "models the effort setting is the dial that works: 'think carefully' adds "
      "latency without a measured gain, and 'don't think' lines do not reduce "
-     "thinking and can leak internal tags into the output.", {"1"}),
+     "thinking and can leak internal tags into the output. Other providers "
+     "differ; Google's Gemini guide says 'think very hard' can help there.", {"1"}),
 
     ("forced-tool-choice", "warn",
      r"(?i)tool_choice[\"'`\s:={]*(type[\"'`\s:=]*)?[\"'`]?(any|tool)\b|"

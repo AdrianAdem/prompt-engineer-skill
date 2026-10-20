@@ -25,10 +25,13 @@ On some current models thinking cannot be switched off at all, and the lowest
 setting still reasons between tool calls. Verify the class with a run rather
 than assume it.
 
-The setting is also the only dependable dial for how much a reasoning model
-thinks. Prompt lines that try to turn thinking up or down ("think carefully",
-"don't overthink") do not move it reliably, and vendor guidance for current
-models (as of October 2026) is to remove them and change the setting instead.
+Where a model has an effort setting, that setting is the dependable dial for
+how much it thinks. Anthropic's guidance for its current models (as of October
+2026) is to remove prompt lines that try to turn thinking up or down ("think
+carefully", "don't overthink") and change the setting instead. This is
+vendor-specific: Google's guide for its current models says a plain "think very
+hard" can help there. Check the target's own guidance before removing such a
+line.
 
 Defaults differ between generations and even between point releases of the same
 model line, and vendors recalibrate what each effort label means from one

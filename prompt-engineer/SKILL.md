@@ -213,11 +213,12 @@ Remove these on sight, including when revising someone else's prompt:
   response. This has moved from wasteful to failing: current models can decline
   it outright as a reasoning-extraction request. Conversely, missing
   chain-of-thought guidance on non-reasoning models for complex tasks
-- Prompt text that tries to dial thinking up or down ("think carefully", "think
-  hard", "don't overthink"). On current reasoning models the effort setting is
-  the control that works: "think carefully" adds latency without a measured
-  gain, and "don't think" lines do not reduce thinking and can leak internal
-  tags into the output
+- On Claude, prompt text that tries to dial thinking up or down ("think
+  carefully", "think hard", "don't overthink"). On the current Claude models the
+  effort setting is the control that works: "think carefully" adds latency
+  without a measured gain, and "don't think" lines do not reduce thinking and
+  can leak internal tags into the output. Providers differ here: Google's guide
+  for its current Gemini models says a plain "think very hard" can help
 - Forcing a tool call (`tool_choice` set to `any` or to a named tool) as a way to
   guarantee output format. Claude Sonnet 5.5 rejects it with a 400, and Opus 5.5
   is reported to as well. Keep
