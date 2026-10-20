@@ -30,6 +30,7 @@ ORDER = [
 ]
 # Sections tagged for one provider are dropped when building for another.
 TAG_RE = re.compile(r"^##\s+(.*?)\s*\[([^\]]+)\]\s*$", re.M)
+PROVIDERS = {"anthropic", "openai", "google"}
 
 
 def strip_frontmatter(text):
@@ -50,9 +51,9 @@ def filter_by_provider(text, provider):
         if line.startswith("## "):
             if m:
                 tags = m.group(2).lower()
-                foreign = "anthropic" in tags and provider != "anthropic"
+                named = {p for p in PROVIDERS if p in tags}
                 universal = "universal" in tags
-                drop = foreign and not universal
+                drop = bool(named) and provider not in named and not universal
                 line = f"## {m.group(1)}\n"
             else:
                 drop = False

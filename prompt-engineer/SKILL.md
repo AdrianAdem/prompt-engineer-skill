@@ -244,6 +244,9 @@ Remove these on sight, including when revising someone else's prompt:
   recommend, and drop the rest.
 - Model versions hardcoded into reusable templates without a date
 - An unpinned effort setting on a model that exposes one
+- Sampling parameters carried over from older setups. Current OpenAI reasoning
+  models want `temperature` and `top_p` removed, and current Gemini models
+  ignore them; see `references/delivery-mechanics.md`
 - Prompt edits proposed before a baseline exists, or several changes bundled into
   one measurement
 
@@ -293,7 +296,7 @@ among them: they read the same agent-skills format, with the same progressive
 disclosure, so the skill directory works there unchanged. Reach for the
 flattener for plain chat interfaces, Gemini, local models, and any client that
 cannot load skills. `--provider openai` drops the reference sections tagged for
-Claude. It does not rewrite this file, so the provider-specific statements here,
+other providers. It does not rewrite this file, so the provider-specific statements here,
 such as the 400 errors in the anti-pattern list, survive the filter; each names
 its scope inline.
 

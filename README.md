@@ -311,8 +311,8 @@ provider-scoped statements survive it, notably the prefill entry in the
 anti-pattern list. Those name their scope inline rather than asserting it
 generally, but a section-level filter is what this is, and that is its limit.
 Every
-section in `delivery-mechanics.md` carries a `[universal]`, `[anthropic]`, or
-`[varies]` tag for exactly this reason; that file moves fastest and is the one to
+section in `delivery-mechanics.md` carries a `[universal]`, `[anthropic]`,
+`[openai]`, `[google]`, or `[varies]` tag for exactly this reason; that file moves fastest and is the one to
 distrust first when something reads as out of date.
 
 Both scripts are standard library only, Python 3.8 or later, no install step.

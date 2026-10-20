@@ -13,6 +13,7 @@ this skill.
   handle context, not of any one API.
 - **[anthropic]** is documented Claude API behaviour. Other providers solve the
   same problem differently, and the error codes and limits will not match.
+- **[openai]** and **[google]** are the same for those providers' APIs.
 - **[varies]** exists everywhere but with different names, defaults, and
   constraints. Verify against the target provider's current documentation.
 
@@ -198,6 +199,45 @@ them before anything else: they are the cheapest regressions to fix.
 | "Avoid a generic look" | Swaps one default for another | Name the specific patterns to avoid |
 | A per-step token or budget countdown in an interactive session | Can be misread as an injection | Drop it |
 | `max_tokens` sized for the answer alone | Truncates, since thinking counts against it | Size it for thinking plus the answer |
+
+## Current OpenAI models [openai]
+
+From OpenAI's guide for GPT-6 Astra and GPT-6.1 Sol, as of October 2026:
+
+- Neither supports reasoning effort `none`, and 6.1 Sol does not support
+  `minimal` either. A request migrated from `minimal` starts at `low`, and the
+  sweep goes up from there.
+- When reasoning effort is not `none`, remove `temperature`, `top_p` and
+  `top_logprobs`, and on Chat Completions `logprobs` too. The guide says to
+  remove them without saying what happens otherwise, so treat a leftover as a
+  bug.
+- Tool calling on both requires the Responses API; Chat Completions serves only
+  requests without tools.
+- A mid-conversation effort change is a `configuration_update` input item. Keep
+  the request-level `reasoning.effort` unchanged so the cached prefix survives.
+  Coming from GPT-5.5 or earlier, `prompt_cache_retention` becomes
+  `prompt_cache_options.ttl`.
+- Astra is more sensitive to instructions in skill files and `AGENTS.md`, and
+  OpenAI suggests stating that the user's instructions take precedence over a
+  skill's when the two conflict. That includes this skill when it runs there.
+- Astra leans toward lists, tables and Markdown, and toward broader tests than a
+  small change needs. State the register and the test scope in the prompt
+  instead of relying on its defaults.
+
+## Current Google models [google]
+
+From Google's prompt design strategies for Gemini, updated 13 October 2026:
+
+- Gemini 4 and Gemini 3.6 and later ignore custom `temperature`, `top_p` and
+  `top_k`; remove them. On earlier Gemini 3 models keep them at their defaults,
+  because changing them degrades reasoning.
+- Gemini 2.5 and 3 think internally, so asking the model to lay out its
+  reasoning steps in the response is generally unnecessary, as for any Class 1
+  model. Unlike Anthropic's current guidance, a plain "Think very hard before
+  answering" can help on problems that need heavy reasoning, at the cost of
+  more thinking tokens.
+- With long context, put all of it first and the instructions or question at
+  the very end, and keep one delimiter style throughout a prompt.
 
 ## Testing note [universal]
 
