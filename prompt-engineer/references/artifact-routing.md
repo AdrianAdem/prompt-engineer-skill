@@ -26,16 +26,12 @@ are the point, not an implementation detail. A reviewer that inherits your
 context inherits your blind spots, so delegating review to one is delegating
 nothing.
 
-## Two signals the user asked for the wrong artifact
-
-They describe a rule using "always" or "never" and want it in a config file. That
-is a hook. Advisory text cannot deliver an absolute guarantee, and writing it as
-if it could produces a rule that holds most of the time, which is worse than
-either alternative because it looks reliable.
-
-They ask for a prompt they clearly intend to paste again next week. That is a
-skill. Writing it as a prompt guarantees it drifts across copies, and the copies
-diverge silently.
+**Why a plugin, when the artifact has users other than you.** A skill copied
+into someone's skills directory is a snapshot: improve it, and they keep the
+old one. In Claude Code, a skill packaged as a plugin in a marketplace reaches
+them as an update instead; other agents have installers with an update command
+of their own. Whatever you publish for others to install, publish through one
+of those.
 
 ## Token economy does not transfer
 

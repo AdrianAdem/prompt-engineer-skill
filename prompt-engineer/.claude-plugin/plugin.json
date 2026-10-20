@@ -1,0 +1,14 @@
+{
+  "name": "prompt-engineer",
+  "displayName": "Prompt Engineer",
+  "version": "1.0.0",
+  "description": "Writes, revises and migrates prompts, agent instructions and skill files, routes each instruction to the artifact where it takes effect, and ships the test cases that show whether it works.",
+  "author": {
+    "name": "Adrian Ademovic",
+    "url": "https://github.com/AdrianAdem"
+  },
+  "homepage": "https://github.com/AdrianAdem/prompt-engineer-skill",
+  "repository": "https://github.com/AdrianAdem/prompt-engineer-skill",
+  "license": "MIT",
+  "keywords": ["prompt-engineering", "prompts", "evals", "agent-skills", "subagents", "hooks"]
+}

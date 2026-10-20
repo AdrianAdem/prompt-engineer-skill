@@ -16,7 +16,10 @@ reviewing its own reasoning in the same context inherits its own blind spots.
 **End-to-end verification, not unit-level.** Models will run unit tests or curl a
 dev server and conclude a feature works when it does not work for a user. Where
 the task has a user-facing surface, require verification through that surface:
-browser automation, the actual CLI, the real endpoint.
+browser automation, the actual CLI, the real endpoint. A syntax-only check does
+not count, and if no real check can run, the agent says which one it skipped
+and why. Without that line, Claude Sonnet 5.5 at low effort sometimes reports
+changes as done without having run anything (Anthropic, October 2026).
 
 **Grounded progress claims.** "Before reporting progress, audit each claim
 against an actual result from this session. Only report work you can point to
@@ -25,6 +28,13 @@ evidence for. If tests fail, say so with the output."
 **Scope boundaries.** "Do not add features, refactor, or introduce abstractions
 beyond what the task requires. Do the simplest thing that works well. Validate
 only at system boundaries such as user input and external APIs."
+
+At the top of the effort range, current models also add review and hardening
+rounds nobody asked for. Anthropic reports that a line such as "Don't start
+extra rounds of review or hardening on your own" cut cost by about a third on
+Claude Sonnet 5.5 (as of October 2026) with no loss in quality. If the prompt
+wants verifier subagents, as the rule above does, say so explicitly, because a
+scope line like that one otherwise suppresses them.
 
 **Checkpoint policy.** Four rules. The first is the one everybody writes; the
 rest are the ones that decide whether an agent is usable.
@@ -50,12 +60,21 @@ rest are the ones that decide whether an agent is usable.
     Elapsed time is not an answer and not consent. If a question goes
     unanswered, continue with the work that does not depend on it, or wait.
 
+State each of these rules once. OpenAI reports that repeated approval lines
+("ask first", "wait for approval") can cause approval requests for safe,
+expected actions, and its guide for GPT-6 Astra recommends the same order as the third
+rule: concrete, reviewable work first, approval last.
+
 **Tool-call batching.** "Run independent reads and searches together in one
 round trip. Keep anything with a dependency, a mutation, or an approval
 sequential." Without this an agent serialises twenty file reads that could have
 been one call, which is most of the wall-clock time in a long session. With it
 and without the second half, it fires off writes in parallel and the failure
-modes stop being reproducible.
+modes stop being reproducible. For Claude agent loops where the next calls are
+implied by the task rather than requested, Anthropic documents a line for Fable
+5.1, sent after each round of tool results as a turn-scoped system message:
+"First privately list what you need next; then request every item that doesn't
+depend on another's result in this one response."
 
 **Failure visibility** for anything automated: explicit error detection and
 alerting rather than silent fallbacks. A silent fallback in an unattended system
@@ -72,7 +91,16 @@ attention.
     You are operating autonomously. The user is not watching in real time and
     cannot answer questions mid-task, so asking "Want me to...?" will block the
     work. For reversible actions that follow from the original request, proceed
-    without asking.
+    without asking. Stop only for destructive actions or genuine scope changes
+    the user must decide.
+
+    Exception: when the user is describing a problem, asking a question, or
+    thinking out loud rather than requesting a change, the deliverable is your
+    assessment. Report your findings and stop.
+
+Anthropic's Fable 5.1 guide publishes a longer version of this block and the
+next one, and notes that the opening sentence, telling the model the user is not
+watching, carries much of the effect. Keep it as written.
 
 **Early stopping**, when the model announces an action instead of taking it, or
 pauses for permission it already has:
@@ -80,8 +108,22 @@ pauses for permission it already has:
     Before ending your turn, check your last paragraph. If it is a plan, an
     analysis, a question, a list of next steps, or a promise about work you have
     not done ("I'll...", "let me know when..."), do that work now with tool
-    calls. End your turn only when the task is complete or you are blocked on
-    input only the user can provide.
+    calls. That includes retrying after errors and gathering missing
+    information yourself. End your turn only when the task is complete or you
+    are blocked on input only the user can provide.
+
+Name the stops. Anthropic reports that Opus 5.5 responds to a prompt listing
+the specific early stops to avoid, such as a summary that announces the next step without taking it, an
+offer to carry on, or a list of decisions none of which blocks the work, and
+also naming the stops that are wanted, where nothing can move without the user.
+
+The prompt-side fix has a harness-side counterpart. A turn can end with text
+while work remains, so treat it as a report, not as completion. If the task
+list still has open items and no stated blocker, send a continuation ("Your
+task list still has open items. Continue with them, and if one is blocked, say
+what blocks it"), and cap automatic continuations at two or three per task so a
+run that is genuinely stuck stops. A task is not done while background commands
+or subagents it started are still running.
 
 **Steering during a long run**, when a message arrives mid-task and the agent
 either ignores it or abandons everything:
@@ -99,6 +141,15 @@ zero or treats the summary as a new brief:
     the most recent user message as the latest steering rather than a new
     objective, and make reasonable assumptions about what the summary dropped.
     Do not redo completed work or repeat updates you already gave.
+
+When the harness compacts on the client, the summary prompt decides what
+survives, so write it as carefully as the task prompt. Anthropic's instruction
+for Fable 5.1 asks the summary to keep problems and how they were handled,
+options tried or set aside and why, where things stand, and what is still
+open, and to state decisions, constraints and preferences, and details that are
+hard to reconstruct such as names, numbers and wording, exactly. The user's
+words stay close to their own; the model's own reasoning is condensed to what
+it concluded.
 
 **Context budget anxiety**, when the model truncates its work or proposes a fresh
 session as the window fills. In a harness that compacts or persists state, say so

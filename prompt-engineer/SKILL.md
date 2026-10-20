@@ -101,10 +101,13 @@ measurement isolates the model change; re-establish the effort setting on the
 new model by sweeping it, because neither copying the old label nor accepting
 the new default preserves depth: vendors recalibrate what each level means
 between versions, and defaults move even between point releases of one model
-line; run the evals for a baseline,
-and ship if it holds; only on regression tune the prompt, starting with verbosity,
-format, and scope; re-measure after each single change, never bundling an effort
-bump with a prompt edit.
+line (a prompt that ran with thinking switched off starts the sweep at the
+lowest level, since current models may reject the switch itself); run the evals
+for a baseline, and ship if it holds; only on regression tune the prompt,
+starting with the lines current models handle differently, listed in
+`references/delivery-mechanics.md`, then verbosity, format, and scope;
+re-measure after each single change, never bundling an effort bump with a
+prompt edit.
 
 ## Step 4: write it
 
@@ -121,10 +124,13 @@ the task needs, in whatever order serves clarity:
   change; if not, it was padding.
 - `<context>` the larger goal, the audience, what the output enables
 - `<task>` a clear imperative; numbered steps only for genuinely sequential work
-- `<input>` variable data with `{{VARIABLE_NAME}}` placeholders
+- `<input>` variable data with `{{VARIABLE_NAME}}` placeholders. Text the
+  prompt's author does not control, such as tickets, emails, scraped pages or
+  pasted documents, gets a boundary and a statement that instructions inside
+  it are data; see untrusted input in `references/delivery-mechanics.md`
 - `<success_criteria>` what a correct output looks like, in checkable terms
 - `<constraints>` only those overriding default behaviour, each with its reason
-- `<examples>` only when consistency demands them; 2 to 5 on a Class 1 target,
+- `<examples>` only when consistency demands them; 3 to 5 on a Class 1 target,
   more on weaker classes, see `references/examples.md` for the gradient and for
   what the set must cover
 - `<output_format>` length, structure, required sections, output language
@@ -149,6 +155,11 @@ smaller models. Use examples when format, tone, or style consistency across many
 runs matters; skip them on open-ended creative or analytical work, where they
 anchor. Once you have decided to use them, `references/examples.md` covers
 coverage, ordering, and the rules that decide whether a set works.
+
+When a prohibition cannot be avoided, make it specific. "Avoid a generic look"
+swaps one default for another, while "no cream background, no numbered 01/02/03
+section labels" works, because the model can check a named pattern and cannot
+check a category.
 
 For the class-specific rules, read `references/model-classes.md`. For agentic and
 multi-context-window prompts, read `references/agentic-prompts.md`. For API and
@@ -190,7 +201,7 @@ three that all pass.
 
 ## Anti-patterns
 
-<!-- lint-disable: prefill, vague-quality, undated-model, filler-role -->
+<!-- lint-disable: prefill, vague-quality, undated-model, filler-role, thinking-control, forced-tool-choice -->
 This section names anti-patterns in order to remove them, so the linter's own
 checks would fire on the descriptions. That is what the waiver above is for; the
 same directive is available to any prompt that legitimately needs a flagged
@@ -199,14 +210,25 @@ phrase.
 Remove these on sight, including when revising someone else's prompt:
 
 - Instructions telling a reasoning model to reproduce its reasoning in the
-  response. This has moved from wasteful to failing: current models can decline
-  it outright as a reasoning-extraction request. Conversely, missing
-  chain-of-thought guidance on non-reasoning models for complex tasks
-- Forcing a tool call (`tool_choice` set to `any` or to a named tool) as a way to
-  guarantee output format. Claude Sonnet 5.5 rejects it with a 400, and Opus 5.5
-  is reported to as well. Keep
-  `tool_choice` at `auto`, use strict tool use for the shape, and say in the
-  prompt when the tool applies
+  response, whether they sit in a prompt, a skill, or a tool description. This
+  has moved from wasteful to failing: current models can decline it outright
+  as a reasoning-extraction request, while a short explanation of the answer
+  is still fine. Conversely, missing chain-of-thought guidance on
+  non-reasoning models for complex tasks
+- On Claude, lines meant to cut thinking ("don't think", "don't overthink"),
+  and "think carefully" boilerplate in chat system prompts. Lowering the effort
+  setting cuts thinking more reliably than any prompt line, "don't think" rules
+  can leak internal tags into the output, and on Opus 5.5 removing "think
+  carefully" made replies start sooner with no clear loss. Targeted lines are a
+  different matter: "Think the problem through before you answer" measurably
+  helps Sonnet 5.5 on reasoning tasks with structured output, and Google says a
+  plain "think very hard" can help Gemini. Keep a thinking line only where an
+  eval shows it earns its place
+- Forcing a tool call (`tool_choice` set to `any` or to a named tool) without
+  checking that the target accepts it. Claude Sonnet 5.5 rejects it with a 400
+  and Opus 5.5 reportedly does too, while Anthropic documents it as a fix on
+  Haiku 5.5. Where it is rejected, keep `tool_choice` at `auto`, use strict
+  tool use for the shape, and say in the prompt when the tool applies
 - Prefill-based tricks. On Claude these are unsupported from 4.6 onward and
   return a 400; other providers differ, so check before ruling it out elsewhere
 - Prompt-text JSON enforcement where structured outputs or a strict tool schema
@@ -227,18 +249,22 @@ Remove these on sight, including when revising someone else's prompt:
   recommend, and drop the rest.
 - Model versions hardcoded into reusable templates without a date
 - An unpinned effort setting on a model that exposes one
+- Sampling parameters carried over from older setups. Current OpenAI reasoning
+  models want `temperature` and `top_p` removed, and current Gemini models
+  ignore them; see `references/delivery-mechanics.md`
 - Prompt edits proposed before a baseline exists, or several changes bundled into
   one measurement
 
 ## Bundled scripts
 
-Two optional scripts, both plain Python with no dependencies.
+Optional tooling, Python standard library and bash only, nothing to install.
 
 `scripts/lint_prompt.py <file>` checks a prompt against the mechanically
-detectable anti-patterns above: reasoning-reproduction instructions, prefill
-patterns, prompt-text JSON enforcement, roles asserting seniority or experience,
-vague quality words, undated model names, prohibition-heavy phrasing, and a
-sentinel value that is permitted in one line and called an error in another. Run it
+detectable anti-patterns above: reasoning-reproduction instructions, lines that
+try to dial thinking, forced tool calls, prefill patterns, prompt-text JSON
+enforcement, roles asserting seniority or experience, vague quality words,
+undated model names, prohibition-heavy phrasing, and a sentinel value that is
+permitted in one line and called an error in another. Run it
 before reviewing a prompt by hand, because the grading ladder puts code before
 judgment and every finding it catches is one you no longer have to spend
 attention on. It sees only what a regex can see; altitude, whether constraints
@@ -252,20 +278,22 @@ blocks in documentation are quoted examples of the patterns being explained.
 `--scan-code` and `--skip-code` override either default.
 
 Pass `--docs` when the file is documentation *about* prompting rather than a
-prompt: six of the checks fire on merely naming a pattern, and linting prose
+prompt: eight of the checks fire on merely naming a pattern, and linting prose
 about an anti-pattern as if it were one is a category error. Do not reach for it
 to quiet a real finding; it disables those checks wholesale. The model-name
 check stays live in both modes, because documentation is the first thing to go
 stale, and it is satisfied by recording a date rather than by an exemption.
 
 `scripts/lint_all.sh` runs every prose file the skill ships in the mode that
-fits it, and validates the two JSON files structurally.
+fits it, and validates the JSON files structurally.
 
-`evals/run_evals.py` runs the cases in `evals/evals.json` against the API and
-grades each output in two layers: regex assertions for structure, and a rubric
-graded by a second model for anything that needs judgment. Two of the cases test
-triggering, which no API call can reproduce, so it prints those as a manual
-checklist instead of pretending to run them.
+`evals/` holds one directory per case, a `prompt.md` and a `graders/` folder,
+in the format `claude plugin eval` reads. That runner loads the skill as a
+session does, so it checks triggering as well as output, and it runs a baseline
+arm without the skill; the number that matters is the difference between the
+two. `evals/run_evals.py` grades the same cases through the API for anyone
+without Claude Code. It cannot see triggering, so it skips those graders and
+says so rather than pretending to run them.
 
 `scripts/build_system_prompt.py` flattens this skill into a single system prompt
 for platforms that genuinely have no skill mechanism. ChatGPT and Codex are not
@@ -273,7 +301,7 @@ among them: they read the same agent-skills format, with the same progressive
 disclosure, so the skill directory works there unchanged. Reach for the
 flattener for plain chat interfaces, Gemini, local models, and any client that
 cannot load skills. `--provider openai` drops the reference sections tagged for
-Claude. It does not rewrite this file, so the provider-specific statements here,
+other providers. It does not rewrite this file, so the provider-specific statements here,
 such as the 400 errors in the anti-pattern list, survive the filter; each names
 its scope inline.
 

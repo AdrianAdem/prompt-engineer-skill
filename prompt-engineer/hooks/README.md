@@ -1,8 +1,9 @@
 # restate-brief hook
 
-Optional. Ships inside the skill so one copy step installs everything, but a
-hook is not loaded from a skill directory: it has to be registered in
-`settings.json` before it does anything.
+Optional. Ships inside the skill, but a hook is not loaded from a skill
+directory, and the plugin deliberately does not register it either: a hook that
+runs on every prompt should be the user's decision, not a side effect of
+installing. It has to be registered in `settings.json` before it does anything.
 
     cp restate-brief.py ~/.claude/hooks/
     chmod +x ~/.claude/hooks/restate-brief.py

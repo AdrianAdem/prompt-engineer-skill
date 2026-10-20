@@ -65,7 +65,8 @@ document about it.
 - **Ships code, not only prose.** A linter that catches the anti-patterns a
   regex can see, and a flattener that turns the skill into a single system
   prompt for platforms with no skill mechanism.
-- **Ships its own evals**, and a benchmark that reports its losses.
+- **Ships its own evals**, runnable in the real harness against a no-skill
+  baseline, and a benchmark that reports its losses.
 
 <br>
 
@@ -97,30 +98,51 @@ same run, same judge.
 
 ## Install
 
-Copy the `prompt-engineer/` directory into your skills directory.
+**Claude Code**, as a plugin, so improvements reach you as updates:
 
-    # Claude Code, project-scoped
-    cp -r prompt-engineer .claude/skills/
+    /plugin install prompt-engineer --marketplace AdrianAdem/prompt-engineer-skill
 
-    # Claude Code, user-scoped
-    cp -r prompt-engineer ~/.claude/skills/
+That works in one step on Claude Code 2.1.275 or later. On older versions, add
+the marketplace first:
 
-The optional slash command lives in `commands/prompt.md`. Copy it to
-`.claude/commands/` to invoke the skill explicitly:
+    claude plugin marketplace add AdrianAdem/prompt-engineer-skill
+    claude plugin install prompt-engineer@prompt-engineer-skill
 
-    /prompt an extractor for support tickets, running at volume
-    /prompt revise <existing prompt>
-    /prompt migrate <target model> <existing prompt>
+Claude Code does not auto-update third-party marketplaces unless you turn it
+on. Do it once: run `/plugin`, open the **prompt-engineer-skill** marketplace,
+and choose **Enable auto-update**. Otherwise
+`claude plugin update prompt-engineer@prompt-engineer-skill` fetches the latest
+release by hand. Either way, the new version applies after a restart.
 
-The command is for when you know you are working on a prompt. The skill also
-triggers on its own description, which covers the case where you do not think of
-your task as a prompting task at all.
+The plugin includes a slash command for when you know you are working on a
+prompt:
+
+    /prompt-engineer:prompt an extractor for support tickets, running at volume
+    /prompt-engineer:prompt revise <existing prompt>
+    /prompt-engineer:prompt migrate <target model> <existing prompt>
+
+The skill also triggers on its own description, which covers the case where you
+do not think of your task as a prompting task at all.
+
+**Codex, Cursor and other agents** that read Agent Skills:
+
+    npx skills add AdrianAdem/prompt-engineer-skill
+    npx skills update
+
+The second command is how you get updates there; nothing updates on its own.
+
+**By hand**, into `~/.claude/skills/` for Claude Code or `~/.agents/skills/`
+for Codex: `cp -r prompt-engineer <that directory>`. A copy never updates, so
+prefer one of the routes above, or symlink a clone and `git pull`.
 
 <br>
 
 ## Layout
 
+    .claude-plugin/marketplace.json     the marketplace Claude Code installs from
+
     prompt-engineer/
+    ├── .claude-plugin/plugin.json      plugin manifest and version
     ├── SKILL.md                        core workflow and anti-patterns
     ├── references/
     │   ├── artifact-routing.md         prompt vs hook vs skill vs subagent
@@ -138,10 +160,12 @@ your task as a prompting task at all.
     │   ├── restate-brief.py            optional, see below
     │   ├── settings-snippet.json
     │   └── README.md
-    ├── commands/prompt.md              optional slash command
+    ├── commands/prompt.md              slash command
+    ├── agents/openai.yaml              display name and invocation policy for Codex
     └── evals/
-        ├── evals.json                  behaviour and triggering cases
-        └── run_evals.py                runner, rubric grading, --self-test
+        ├── 01-…/ to 08-…/              one case each: prompt.md and graders/
+        ├── README.md                   both runners, grading rules
+        └── run_evals.py                API runner, --self-test
 
     benchmark/
     ├── README.md                       method, results, and what the data does not support
@@ -196,7 +220,8 @@ it is" gets you agreement, which destroys the independence you delegated for.
     python scripts/lint_prompt.py myprompt.md --json
 
 Catches the anti-patterns a regex can see: reasoning-reproduction instructions,
-prefill patterns, prompt-text JSON enforcement, roles asserting seniority or
+lines that try to dial thinking, forced tool calls, prefill patterns,
+prompt-text JSON enforcement, roles asserting seniority or
 experience instead of domain, vague quality words, undated model names,
 prohibition-heavy phrasing, and sentinel conflicts, where one line permits
 `null` for a missing field and another says a null breaks the consumer. It exits non-zero on errors, so it drops into a
@@ -208,7 +233,7 @@ A file can waive checks it discusses rather than commits:
 
 and a single line can waive everything with a trailing `lint-ignore`. For whole
 files that are documentation about prompting rather than prompts, use `--docs`,
-which disables the six checks that fire on merely naming a pattern. The skill's
+which disables the eight checks that fire on merely naming a pattern. The skill's
 own reference files are linted that way; `SKILL.md` and the slash command are
 linted normally, because they are instructions.
 
@@ -219,7 +244,7 @@ satisfied by recording a date, not by an exemption.
     ./scripts/lint_all.sh
 
 runs every prose file the skill ships in the mode that fits it, and validates
-the two JSON files structurally. Exit 0 means the whole package is clean, not
+the JSON files structurally. Exit 0 means the whole package is clean, not
 just one file.
 
 Fenced code blocks are scanned in normal mode and stripped in `--docs` mode.
@@ -237,26 +262,37 @@ by design.
 
 ## Running the evals
 
+`prompt-engineer/evals/` holds eight cases in the format `claude plugin eval`
+reads: six where the skill should fire and two where it must not. That runner
+loads the skill the way a session does, so it tests triggering as well as
+output, and it runs every case with the skill and again without it:
+
+    claude plugin eval prompt-engineer --runs 1 --no-publish --model sonnet --judge-model opus
+    claude plugin eval prompt-engineer --no-publish --model sonnet --judge-model opus
+
+The first is a pilot that reports what the full run, three samples per case,
+will cost. The number that matters is the difference between the two arms; a
+suite score on its own describes the model, not the skill. The judge is a
+different model from the one under test, because a model grading its own output
+is measuring itself.
+
+Without Claude Code, the same cases run through the API:
+
     export ANTHROPIC_API_KEY=...
-    python evals/run_evals.py                  # the automatable cases
-    python evals/run_evals.py --manual         # the triggering checklist
-    python evals/run_evals.py --dry-run        # print prompts, call nothing
+    python prompt-engineer/evals/run_evals.py --runs 3
+    python prompt-engineer/evals/run_evals.py --self-test   # offline, also runs in CI
 
-Each case carries machine-checkable assertions rather than a prose expectation,
-so a run gives a pass count instead of something to read and judge. Failures
-write the full output to `evals/out_<id>.txt`.
-
-Two cases test whether the skill *triggers*, and those are printed as a manual
-checklist instead of being run. Triggering is a property of the harness that
-loads the skill; no API call reproduces it. Pretending otherwise would be the
-exact failure this skill warns about, a green result that proves nothing.
+It pins the effort setting, grades judgment criteria with a second model, and
+skips the trigger checks, which only a harness can see, rather than pretending
+to run them. Grading rules and the floor every case must meet are in
+`prompt-engineer/evals/README.md`.
 
 <br>
 
 ## Using it outside Claude
 
-The skill *format* is Anthropic's: Claude Code, Claude.ai, Cowork, and the Agent
-SDK read it. The *content* is deliberately cross-provider, with sections on
+The skill *format* is the Agent Skills format: Claude Code, Claude.ai, the
+Agent SDK, ChatGPT and Codex read it directly. The *content* is deliberately cross-provider, with sections on
 OpenAI, Gemini, and open-weight conventions, and model classes defined by
 capability signature rather than by vendor.
 
@@ -266,8 +302,8 @@ For a platform with no skill mechanism, flatten it into one system prompt:
     python scripts/build_system_prompt.py --provider openai -o system-prompt.md
     python scripts/build_system_prompt.py --core -o system-prompt.md
 
-The full build is roughly 12,000 tokens and the core alone roughly 3,800,
-measured on the current tree; both grow as reference files are added, so
+The full build is roughly 17,800 tokens and the core alone roughly 4,400,
+measured on the current tree; both grow as the skill does, so
 regenerate rather than trusting these numbers. The
 `--provider` flag drops reference *sections* tagged for a different vendor. It
 does not rewrite `SKILL.md`, which carries no section tags, so a few
@@ -275,8 +311,8 @@ provider-scoped statements survive it, notably the prefill entry in the
 anti-pattern list. Those name their scope inline rather than asserting it
 generally, but a section-level filter is what this is, and that is its limit.
 Every
-section in `delivery-mechanics.md` carries a `[universal]`, `[anthropic]`, or
-`[varies]` tag for exactly this reason; that file moves fastest and is the one to
+section in `delivery-mechanics.md` carries a `[universal]`, `[anthropic]`,
+`[openai]`, `[google]`, or `[varies]` tag for exactly this reason; that file moves fastest and is the one to
 distrust first when something reads as out of date.
 
 Both scripts are standard library only, Python 3.8 or later, no install step.
@@ -303,9 +339,10 @@ and are meant to be edited to match how you actually write. It exits zero on any
 malformed input, because a hook that blocks a turn is worse than one that does
 nothing.
 
-It ships inside the skill directory so one copy step installs everything, but a
-hook is not loaded from there. Copy it to `~/.claude/hooks/` and merge
-`settings-snippet.json` into your `settings.json`. Check the payload field name against your Claude Code
+It ships inside the skill directory, but neither the skill nor the plugin
+registers it: a hook that runs on every prompt should be your decision, not a
+side effect of installing something. Copy it from a clone of this repository to
+`~/.claude/hooks/` and merge `settings-snippet.json` into your `settings.json`. Check the payload field name against your Claude Code
 version; the script tries four common variants.
 
 <br>
@@ -318,10 +355,11 @@ author's own words rather than copied.
 
 Two honest caveats.
 
-The **named example models are dated August 2026** and will go stale. The skill
-classifies by capability signature rather than by model name precisely so the
-structure survives that, but the examples in `model-classes.md` will need
-refreshing.
+**Provider specifics are dated, and they go stale first.** `model-classes.md`
+names no models and classifies by capability signature, so it survives
+releases. The vendor-specific facts, error codes, defaults and parameters, live
+in `delivery-mechanics.md`, each section tagged by provider and dated October
+2026. Distrust that file first when something reads as out of date.
 
 The **Class 3 guidance for small and open-weight models is the least
 well-sourced** section. It is marked as such in the file. Treat it as a starting
@@ -334,6 +372,11 @@ point and rely on evals more heavily there.
 Corrections to model behaviour claims are especially welcome, particularly with a
 reproducible case. The most useful contribution is a prompt this skill handled
 badly, along with what you expected instead.
+
+Every change under `prompt-engineer/` needs a version bump in
+`prompt-engineer/.claude-plugin/plugin.json`, because installed copies only
+update when the version changes. CI fails a pull request that changes the
+plugin without one. `claude plugin tag prompt-engineer` tags the release.
 
 <br>
 
