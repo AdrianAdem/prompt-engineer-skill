@@ -57,16 +57,17 @@ has no way to resolve.
 
 ## Matching the brief to the subagent's class
 
-The subagent's `model:` field fixes its class, so the brief must match it. A
-goal-level brief sent to a small model produces confident wrong answers; a
+The subagent's class is its model times its effort setting, as in
+`model-classes.md`, not the `model:` field alone, so the brief must match both.
+A goal-level brief sent to a small model produces confident wrong answers; a
 step-by-step brief sent to a frontier model produces worse work than no brief at
 all.
 
-- **Frontier or inherited model.** Goal, success criteria, boundaries. Do not
+- **Class 1: frontier or inherited model.** Goal, success criteria, boundaries. Do not
   decompose the task; that is the capability you delegated to.
-- **Mid-tier model.** Numbered steps for anything multi-part, and an explicit
+- **Class 2: mid-tier model.** Numbered steps for anything multi-part, and an explicit
   statement of the output you expect back.
-- **Small model.** One job per invocation, hard numeric limits, literal paths,
+- **Class 3: small model.** One job per invocation, hard numeric limits, literal paths,
   and the shape of the answer shown rather than described. If the task needs
   judgment about what matters, it is the wrong model, not the wrong brief.
 

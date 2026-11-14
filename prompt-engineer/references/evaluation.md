@@ -23,8 +23,8 @@ Size the set to what the prompt does and how often it runs.
 |---|---|---|
 | Once, in a chat | 3 | one typical, one canonical edge case, one that stresses the main constraint |
 | Occasionally, by hand | 8 to 12 | the three above, plus one per input dimension that actually varies |
-| At volume, unattended | 30 to 50 seed, expanded to a few hundred | see below |
-| Classification at volume | at least 20 per class, plus borderline items | see below |
+| At volume, unattended | 20 to 30 seed, expanded to a few hundred | see below |
+| Classification at volume | at least 20 per class in the expanded set, not the seed, plus borderline items | see below |
 
 Three cases is a smoke test, not an eval. It catches a prompt that is broken; it
 cannot tell you a prompt is 92 percent right, and it cannot tell you whether a

@@ -36,7 +36,7 @@ Claude Sonnet 5.5 (as of October 2026) with no loss in quality. If the prompt
 wants verifier subagents, as the rule above does, say so explicitly, because a
 scope line like that one otherwise suppresses them.
 
-**Checkpoint policy.** Four rules. The first is the one everybody writes; the
+**Checkpoint policy.** Five rules. The first is the one everybody writes; the
 rest are the ones that decide whether an agent is usable.
 
     Pause for the user only when the work genuinely requires them: a destructive
@@ -62,8 +62,8 @@ rest are the ones that decide whether an agent is usable.
 
 State each of these rules once. OpenAI reports that repeated approval lines
 ("ask first", "wait for approval") can cause approval requests for safe,
-expected actions, and its guide for GPT-6 Astra recommends the same order as the third
-rule: concrete, reviewable work first, approval last.
+expected actions, and its guide for GPT-6 Astra recommends the same order as the
+third rule: concrete, reviewable work first, approval last.
 
 **Tool-call batching.** "Run independent reads and searches together in one
 round trip. Keep anything with a dependency, a mutation, or an approval
@@ -112,10 +112,11 @@ pauses for permission it already has:
     information yourself. End your turn only when the task is complete or you
     are blocked on input only the user can provide.
 
-Name the stops. Anthropic reports that Opus 5.5 responds to a prompt listing
-the specific early stops to avoid, such as a summary that announces the next step without taking it, an
-offer to carry on, or a list of decisions none of which blocks the work, and
-also naming the stops that are wanted, where nothing can move without the user.
+Name the stops. Anthropic reports that Opus 5.5 responds to a prompt listing the
+specific early stops to avoid, such as a summary that announces the next step
+without taking it, an offer to carry on, or a list of decisions none of which
+blocks the work, and also naming the stops that are wanted, where nothing can
+move without the user.
 
 The prompt-side fix has a harness-side counterpart. A turn can end with text
 while work remains, so treat it as a report, not as completion. If the task

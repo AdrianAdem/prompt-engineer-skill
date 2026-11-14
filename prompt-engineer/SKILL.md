@@ -339,7 +339,7 @@ Check that the result is the right artifact and not a prompt standing in for a
 hook or a skill; that it matches its type in structure; that no two constraints
 contradict each other, in particular over sentinel values such as `null`; that
 machine-consumed output carries an uncertainty signal with a stated threshold
-behaviour; that it states measurable success criteria; that it matches the target class and effort setting; that every
-placeholder is a `{{VARIABLE}}`; that constraints carry their reasons; that it
-ships with test cases; and that it would work for a capable new colleague with no
-prior context.
+behaviour; that it states measurable success criteria; that it matches the
+target class and effort setting; that every placeholder is a `{{VARIABLE}}`;
+that constraints carry their reasons; that it ships with test cases; and that it
+would work for a capable new colleague with no prior context.

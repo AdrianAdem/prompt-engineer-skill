@@ -148,12 +148,12 @@ Thinking is a separate switch, and on current models it is partly locked. Opus
 5.5 the lowest setting is `{"type": "between_tools"}`, which skips the up-front
 pass, is accepted only at `high` or below, and without tools answers with no
 thinking at all, so reasoning tasks belong on adaptive thinking. Haiku 5.5 can
-still switch thinking off, at `high` or below. On Opus 5, Sonnet 5, Sonnet 5.5
-and Haiku 5.5 thinking is on when the field is omitted, so read content blocks
-by type, never by position. Effort is the dial that moves the amount of
-thinking; system-prompt lines asking for less of it do not. At `xhigh` in
-multi-turn chats, Haiku 5.5 sometimes puts its whole answer in the thinking and
-returns no visible text, so check for empty replies.
+still switch thinking off, at `high` or below. On Opus 5, Opus 5.5, Sonnet 5,
+Sonnet 5.5 and Haiku 5.5 thinking is on when the field is omitted, so read
+content blocks by type, never by position. Effort is the dial that moves the
+amount of thinking; system-prompt lines asking for less of it do not. At `xhigh`
+in multi-turn chats, Haiku 5.5 sometimes puts its whole answer in the thinking
+and returns no visible text, so check for empty replies.
 
 `max_tokens` covers thinking plus the answer, so size it for both; Anthropic
 suggests 128,000 with streaming for agentic coding. Changing the top-level

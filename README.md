@@ -72,9 +72,10 @@ document about it.
 
 ## Does it work
 
-[`benchmark/`](benchmark/) holds three rounds against three other public prompt-engineering
-skills, on the same two tasks, with a blinded LLM judge and documented rubric versions. The
-raw answers and the task prompts are in the repo.
+[`benchmark/`](benchmark/) holds three rounds against three other public
+prompt-engineering skills, on the same two tasks, with a blinded LLM judge and
+documented rubric versions. The raw answers and the task prompts are in the
+repo.
 
 Two results worth knowing before you install anything.
 
@@ -91,8 +92,8 @@ in the judge instance and the labels; three of four positions moved. The same
 unchanged answer went from first to third when the judge's model changed. Only
 before-and-after comparisons inside one run mean anything, which is exactly how
 the one attributable improvement was measured: rewriting
-[`references/evaluation.md`](prompt-engineer/references/evaluation.md) moved this skill's answer from last place to second,
-same run, same judge.
+[`references/evaluation.md`](prompt-engineer/references/evaluation.md) moved
+this skill's answer from last place to second, same run, same judge.
 
 <br>
 
@@ -179,12 +180,7 @@ description alone.
 
 ## What the skill actually enforces
 
-Three things it gets right that are easy to get wrong by hand.
-
-**Class is model times effort, not model alone.** A frontier model pinned to
-minimal reasoning wants explicit steps, not goal-level guidance, and defaults
-shift between model generations. An unpinned effort setting is treated as an
-unknown class rather than assumed.
+Two things it gets right that are easy to get wrong by hand.
 
 **Multi-session work gets two prompts, not one.** A single prompt repeated per
 session fails predictably: the first session tries to one-shot the whole thing
@@ -221,11 +217,11 @@ it is" gets you agreement, which destroys the independence you delegated for.
 
 Catches the anti-patterns a regex can see: reasoning-reproduction instructions,
 lines that try to dial thinking, forced tool calls, prefill patterns,
-prompt-text JSON enforcement, roles asserting seniority or
-experience instead of domain, vague quality words, undated model names,
-prohibition-heavy phrasing, and sentinel conflicts, where one line permits
-`null` for a missing field and another says a null breaks the consumer. It exits non-zero on errors, so it drops into a
-pre-commit hook or CI.
+prompt-text JSON enforcement, roles asserting seniority or experience instead of
+domain, vague quality words, undated model names, prohibition-heavy phrasing,
+and sentinel conflicts, where one line permits `null` for a missing field and
+another says a null breaks the consumer. It exits non-zero on errors, so it
+drops into a pre-commit hook or CI.
 
 A file can waive checks it discusses rather than commits:
 
@@ -291,10 +287,10 @@ to run them. Grading rules and the floor every case must meet are in
 
 ## Using it outside Claude
 
-The skill *format* is the Agent Skills format: Claude Code, Claude.ai, the
-Agent SDK, ChatGPT and Codex read it directly. The *content* is deliberately cross-provider, with sections on
-OpenAI, Gemini, and open-weight conventions, and model classes defined by
-capability signature rather than by vendor.
+The skill *format* is the Agent Skills format: Claude Code, Claude.ai, the Agent
+SDK, ChatGPT and Codex read it directly. The *content* is deliberately
+cross-provider, with sections on OpenAI, Gemini, and open-weight conventions,
+and model classes defined by capability signature rather than by vendor.
 
 For a platform with no skill mechanism, flatten it into one system prompt:
 
@@ -303,17 +299,16 @@ For a platform with no skill mechanism, flatten it into one system prompt:
     python scripts/build_system_prompt.py --core -o system-prompt.md
 
 The full build is roughly 17,800 tokens and the core alone roughly 4,400,
-measured on the current tree; both grow as the skill does, so
-regenerate rather than trusting these numbers. The
-`--provider` flag drops reference *sections* tagged for a different vendor. It
-does not rewrite `SKILL.md`, which carries no section tags, so a few
-provider-scoped statements survive it, notably the prefill entry in the
-anti-pattern list. Those name their scope inline rather than asserting it
-generally, but a section-level filter is what this is, and that is its limit.
-Every
-section in `delivery-mechanics.md` carries a `[universal]`, `[anthropic]`,
-`[openai]`, `[google]`, or `[varies]` tag for exactly this reason; that file moves fastest and is the one to
-distrust first when something reads as out of date.
+measured on the current tree; both grow as the skill does, so regenerate rather
+than trusting these numbers. The `--provider` flag drops reference *sections*
+tagged for a different vendor. It does not rewrite `SKILL.md`, which carries no
+section tags, so a few provider-scoped statements survive it, notably the
+prefill entry in the anti-pattern list. Those name their scope inline rather
+than asserting it generally, but a section-level filter is what this is, and
+that is its limit. Every section in `delivery-mechanics.md` carries a
+`[universal]`, `[anthropic]`, `[openai]`, `[google]`, or `[varies]` tag for
+exactly this reason; that file moves fastest and is the one to distrust first
+when something reads as out of date.
 
 Both scripts are standard library only, Python 3.8 or later, no install step.
 
@@ -342,8 +337,9 @@ nothing.
 It ships inside the skill directory, but neither the skill nor the plugin
 registers it: a hook that runs on every prompt should be your decision, not a
 side effect of installing something. Copy it from a clone of this repository to
-`~/.claude/hooks/` and merge `settings-snippet.json` into your `settings.json`. Check the payload field name against your Claude Code
-version; the script tries four common variants.
+`~/.claude/hooks/` and merge `settings-snippet.json` into your `settings.json`.
+Check the payload field name against your Claude Code version; the script tries
+four common variants.
 
 <br>
 

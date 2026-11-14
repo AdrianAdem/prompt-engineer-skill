@@ -17,14 +17,14 @@ did not describe. That test survives every rename.
 Reasoning models expose an effort or reasoning-level knob, and at the bottom of
 that range they stop behaving like reasoning models. A frontier model pinned to
 its lowest setting wants the structural half of Class 2 prompting: explicit
-steps, told how rather than what. Whether it wants the other half depends on
-the model, even within one vendor's line-up. Several current models decline a
+steps, told how rather than what. Whether it wants the other half depends on the
+model, even within one vendor's line-up. Several current models decline a
 request to write their reasoning into the response in place of thinking, as a
 reasoning-extraction request; for others, written chain of thought with the
-answer in its own tag is still the documented fallback when thinking is
-switched off. Check the target's guide. Either way, when the task needs more reasoning than the lowest setting
-gives, raising the setting is the stronger lever.
-On some current models thinking cannot be switched off at all, and the lowest
+answer in its own tag is still the documented fallback when thinking is switched
+off. Check the target's guide. Either way, when the task needs more reasoning
+than the lowest setting gives, raising the setting is the stronger lever. On
+some current models thinking cannot be switched off at all, and the lowest
 setting still reasons between tool calls. Verify the class with a run rather
 than assume it.
 
