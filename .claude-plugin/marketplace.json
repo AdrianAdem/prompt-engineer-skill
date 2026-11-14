@@ -1,0 +1,14 @@
+{
+  "name": "prompt-engineer-skill",
+  "description": "Prompt Engineer: an Agent Skill for writing, revising and migrating prompts, with the test cases that show whether they work.",
+  "owner": {
+    "name": "Adrian Ademovic"
+  },
+  "plugins": [
+    {
+      "name": "prompt-engineer",
+      "source": "./prompt-engineer",
+      "description": "Writes, revises and migrates prompts, agent instructions and skill files, with the test cases that show whether they work."
+    }
+  ]
+}

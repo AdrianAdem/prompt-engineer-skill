@@ -15,6 +15,12 @@ ten. Each round relabelled the answers and reshuffled their order. Nothing was
 removed from them: they were checked for traces of their origin by grepping for
 skill and author names, with no hits.
 
+`tasks.md` cites cases 1 and 5 of `prompt-engineer/evals/evals.json`. That file
+has since been replaced by one directory per case. The same two prompts, word
+for word, are in `prompt-engineer/evals/01-ticket-extractor-at-volume/` and
+`prompt-engineer/evals/05-every-commit-rule/`, and the original file is in the
+git history.
+
 **The rubric was not identical across all three rounds, and that matters for
 what this benchmark can claim.** Rounds 1 and 2 used the same rubric word for
 word. Round 3 extended item 5 to ask the judge to look for constraints inside a

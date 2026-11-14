@@ -23,12 +23,22 @@ Size the set to what the prompt does and how often it runs.
 |---|---|---|
 | Once, in a chat | 3 | one typical, one canonical edge case, one that stresses the main constraint |
 | Occasionally, by hand | 8 to 12 | the three above, plus one per input dimension that actually varies |
-| At volume, unattended | 30 to 50 seed, expanded to a few hundred | see below |
-| Classification at volume | at least 20 per class, plus borderline items | see below |
+| At volume, unattended | 20 to 30 seed, expanded to a few hundred | see below |
+| Classification at volume | at least 20 per class in the expanded set, not the seed, plus borderline items | see below |
 
 Three cases is a smoke test, not an eval. It catches a prompt that is broken; it
 cannot tell you a prompt is 92 percent right, and it cannot tell you whether a
 change made things worse.
+
+**Runs per case.** A model's output is a sample, so one run per case is an
+anecdote. Run each case at least three times and report the pass rate per case;
+a case that passes two runs of three is a finding, not a pass. Graders vary too,
+which is what the calibration below is for.
+
+**A baseline arm.** When the thing under test is an addition to something that
+already works, a skill, a new section, a system prompt, run the same cases
+without it and report the difference. A suite that scores 80 percent says
+little if the bare model scores 78.
 
 **Building a large set from a small one.** Hand-write 20 to 30 cases that you
 are certain about, covering every class and every edge you know. Those are the
@@ -60,7 +70,11 @@ break prompts in production:
 For anything that enforces a rule, add a fifth: an input that tries to get
 around the rule. A prompt or a generated script that enforces something is only
 verified by a case that attempts the bypass and is expected to fail. A rule
-tested only with compliant input is untested.
+tested only with compliant input is untested. For a template that reads text
+from outside, the bypass case is an input carrying an instruction aimed at the
+model. For a chatbot holding a rule, Anthropic's testing names the shapes worth
+covering: the user argues, gives a sympathetic reason, asks for just a small
+part, claims that someone approved an exception, or keeps asking.
 
 ## Grading ladder
 
